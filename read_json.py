@@ -17,7 +17,7 @@ parsed_data = json.loads(json_data)
 print('DATA PARSED')
 maxraw=0
 maxrawweapon='ytgfiyghiuyv'
-for weapon_type in ['gun_lance']:#doesn't work from lbg to bow(ranged weapons)
+for weapon_type in ['hammer']:#doesn't work from lbg to bow(ranged weapons)
 
     weapon_type_cap=process.extractOne(weapon_type, all_weapons_cap)[0]
 
