@@ -15,7 +15,8 @@ with open("mhrice.json", "r") as json_file:
 # Parse the JSON data into a Python dictionary
 parsed_data = json.loads(json_data)
 print('DATA PARSED')
-
+maxraw=0
+maxrawweapon='ytgfiyghiuyv'
 for weapon_type in ['gun_lance']:#doesn't work from lbg to bow(ranged weapons)
 
     weapon_type_cap=process.extractOne(weapon_type, all_weapons_cap)[0]
@@ -31,7 +32,10 @@ for weapon_type in ['gun_lance']:#doesn't work from lbg to bow(ranged weapons)
 
         name = parsed_data[weapon_type][name_key]['entries'][id]
         realname = parsed_data[weapon_type][name_key]['entries'][id]['content'][1]
+        if len(realname)==0:continue
+        if realname[0]=='<':continue
         raw =               weapon_info_dict['base']['base']['atk']
+        if raw ==0:continue
         element_type = weapon_info_dict['base']['main_element_type']
         element_damage = weapon_info_dict['base']['main_element_val']
         affinity =          weapon_info_dict['base']['base']['critical_rate']
@@ -48,7 +52,11 @@ for weapon_type in ['gun_lance']:#doesn't work from lbg to bow(ranged weapons)
         
         rampage_skill_names = [parsed_data['hyakuryu_skill_name_msg']['entries'][rid + 1]['content'][1] for rid in rampage_skill_ids]
 
-        print(i,':::::',realname, rampage_skill_names, raw)
 
+        if raw>maxraw:
+            maxraw=raw
+            maxrawweapon=realname
+        print(i,':::::',realname, rampage_skill_names, raw,affinity)
+print(maxrawweapon,',,,,',maxraw)
 #weapons start at line 2394640
 #use the weeapontype to number as id in  w thingy.
