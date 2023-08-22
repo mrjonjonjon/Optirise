@@ -16,19 +16,14 @@ with open("mhrice.json", "r") as json_file:
 parsed_data = json.loads(json_data)
 print('DATA PARSED')
 
-
-print(len(parsed_data["great_sword"]['base_data']['param']))
-print(len(parsed_data["great_sword"]['name']['entries']))
-print(len(parsed_data["great_sword"]['name_mr']['entries']))
-
-
-for weapon_type in ['great_sword']:#doesn't work from lbg to bow(ranged weapons)
+for weapon_type in ['gun_lance']:#doesn't work from lbg to bow(ranged weapons)
 
     weapon_type_cap=process.extractOne(weapon_type, all_weapons_cap)[0]
 
-    for i in range(294):    
+    for i in range(len(parsed_data[weapon_type]['base_data']['param'])):    
         weapon_info_dict = parsed_data[weapon_type]['base_data']['param'][i]['base']
         id = weapon_info_dict['base']['base']['base']['id'][weapon_type_cap]
+   
         name_key = 'name'
         if id >= 300:
             id = id % 300
@@ -37,16 +32,19 @@ for weapon_type in ['great_sword']:#doesn't work from lbg to bow(ranged weapons)
         name = parsed_data[weapon_type][name_key]['entries'][id]
         realname = parsed_data[weapon_type][name_key]['entries'][id]['content'][1]
         raw =               weapon_info_dict['base']['base']['atk']
+        element_type = weapon_info_dict['base']['main_element_type']
+        element_damage = weapon_info_dict['base']['main_element_val']
         affinity =          weapon_info_dict['base']['base']['critical_rate']
         sharpness =         weapon_info_dict['sharpness_val_list']
         def_bonus =         weapon_info_dict['base']['base']['def_bonus']
-
         normal_deco_slots = weapon_info_dict['base']['base']['slot_num_list']
         rampage_deco_slots =weapon_info_dict['base']['base']['hyakuryu_slot_num_list']
+        rampage_skill_ids=[]
         if len(weapon_info_dict['base']['base']['hyakuryu_skill_id_list'])==0 or\
         weapon_info_dict['base']['base']['hyakuryu_skill_id_list'][0]=="None":
-            continue
-        rampage_skill_ids = [d['Skill'] for d in parsed_data[weapon_type]['base_data']['param'][i]['base']['base']['base']['hyakuryu_skill_id_list']]
+            rampage_skill_ids=[]
+        else:
+            rampage_skill_ids = [d['Skill'] for d in parsed_data[weapon_type]['base_data']['param'][i]['base']['base']['base']['hyakuryu_skill_id_list']]
         
         rampage_skill_names = [parsed_data['hyakuryu_skill_name_msg']['entries'][rid + 1]['content'][1] for rid in rampage_skill_ids]
 

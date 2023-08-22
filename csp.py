@@ -29,13 +29,11 @@ def solve_boolean_problem():
     model.Add(sum(id_to_head_armor_var.values()) == 1)
     model.Add(sum(id_to_body_armor_var.values()) == 1)
 
-
+    #MAPPING ARMOR VARIABLES TO THEIR PROPERTIES
     for id in head_armor_ids:
-        # Define the atk value based on the selection of head[0]
         model.Add(head_armor_def_var== id_to_head_armor_def[id]).OnlyEnforceIf(id_to_head_armor_var[id])
     
     for id in body_armor_ids:
-        # Define the atk value based on the selection of head[0]
         model.Add(body_armor_def_var == id_to_body_armor_def[id]).OnlyEnforceIf(id_to_body_armor_var[id])
 
 
