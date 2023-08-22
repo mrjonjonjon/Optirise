@@ -4,8 +4,9 @@ from ortools.sat.python import cp_model
 
 head_armor_ids=[1,2,3]
 body_armor_ids = [1,2,3]
-head_def = {1:10,2:90,3:40}
-body_def = {1:50,2:10,3:10}
+id_to_head_armor_def = {1:10,2:90,3:40}
+id_to_body_armor_def = {1:50,2:10,3:10}
+
 def solve_boolean_problem():
     # Create a CP-SAT solver
     model = cp_model.CpModel()
@@ -13,28 +14,29 @@ def solve_boolean_problem():
     
 
     # Create boolean variables
-    head = {id:model.NewBoolVar(f'h{id}') for id in head_armor_ids}
-    body = {id:model.NewBoolVar(f'b{id}') for id in body_armor_ids}
+    id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in head_armor_ids}
+    id_to_body_armor_var = {id:model.NewBoolVar(f'b{id}') for id in body_armor_ids}
   
 
 
-    head_v = model.NewIntVar(0,1000,'head_def')
-    body_v = model.NewIntVar(0,1000,'body_def')
+    head_armor_def_var = model.NewIntVar(0,1000,'head_def')
+    body_armor_def_var = model.NewIntVar(0,1000,'body_def')
 
 
-    model.Maximize(head_v+body_v)
+    model.Maximize(head_armor_def_var+body_armor_def_var)
+
     #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
-    model.Add(sum(head.values()) == 1)
-    model.Add(sum(body.values()) == 1)
+    model.Add(sum(id_to_head_armor_var.values()) == 1)
+    model.Add(sum(id_to_body_armor_var.values()) == 1)
 
 
     for id in head_armor_ids:
         # Define the atk value based on the selection of head[0]
-        model.Add(head_v== head_def[id]).OnlyEnforceIf(head[id])
+        model.Add(head_armor_def_var== id_to_head_armor_def[id]).OnlyEnforceIf(id_to_head_armor_var[id])
     
     for id in body_armor_ids:
         # Define the atk value based on the selection of head[0]
-        model.Add(body_v == body_def[id]).OnlyEnforceIf(body[id])
+        model.Add(body_armor_def_var == id_to_body_armor_def[id]).OnlyEnforceIf(id_to_body_armor_var[id])
 
 
     # Create a solver and solve the model
@@ -42,7 +44,7 @@ def solve_boolean_problem():
     status = solver.Solve(model)
 
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        solution = [solver.Value(body_v),solver.Value(head_v)]
+        solution = [solver.Value(body_armor_def_var),solver.Value(head_armor_def_var)]
         return solution
     else:
         return None

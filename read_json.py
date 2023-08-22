@@ -22,13 +22,13 @@ print(len(parsed_data["great_sword"]['name']['entries']))
 print(len(parsed_data["great_sword"]['name_mr']['entries']))
 
 
-for weapon_type in ['great_sword']:
+for weapon_type in ['great_sword']:#doesn't work from lbg to bow(ranged weapons)
 
     weapon_type_cap=process.extractOne(weapon_type, all_weapons_cap)[0]
 
     for i in range(294):    
         weapon_info_dict = parsed_data[weapon_type]['base_data']['param'][i]['base']
-        id = parsed_data[weapon_type]['base_data']['param'][i]['base']['base']['base']['base']['id'][weapon_type_cap]
+        id = weapon_info_dict['base']['base']['base']['id'][weapon_type_cap]
         name_key = 'name'
         if id >= 300:
             id = id % 300
