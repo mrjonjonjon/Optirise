@@ -2,12 +2,20 @@ from ortools.sat.python import cp_model
 
 import json
 with open("json/armor.json", "r") as json_file:
-    json_data = json_file.read()
+    json_armor_data = json_file.read()
 
+with open("json/types.json", "r") as json_file:
+    json_deco_data = json_file.read()
 
-armor_data = json.loads(json_data)
+armor_data = json.loads(json_armor_data)
+deco_data = json.loads(json_deco_data)
 
 print('DATA PARSED')
+def h(a):
+    ans=0
+    for i in range(4):
+        ans+=a[i]*(i+1)
+    return ans
 
 def solve_boolean_problem():
     model = cp_model.CpModel()
@@ -21,10 +29,15 @@ def solve_boolean_problem():
     id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in range(0,len(armor_data['waist']))}
     id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor_data['leg']))}
 
-    #CREATE INTEGER DECO VARIABLES
-    #id_to_deco_var={id:model.NewIntVar(0,5,f'deco_{id}') for id in range()}
-  
 
+    #CREATE INTEGER DECO VARIABLES
+    deco_name_to_dist_vars={}
+    for level in range(4):
+        for pair in deco_data['decoLevels'][level]:
+            name=list(pair.keys())[0]
+            deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg']}
+            #if name=='AffinitySliding':print(level,deco_name_to_dist_vars[f'{name}_{level+1}'])
+                      
     #DEFENSE VARIABLES
     head_armor_def_var = model.NewIntVar(0,1000,'head_def')
     body_armor_def_var = model.NewIntVar(0,1000,'body_def')
@@ -32,6 +45,7 @@ def solve_boolean_problem():
     waist_armor_def_var = model.NewIntVar(0,1000,'waist_def')
     leg_armor_def_var = model.NewIntVar(0,1000,'leg_def')
 
+    #DECO SLOT VARIABLES
     head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
     body_deco_slots_vars = [model.NewIntVar(0,3,f'bdeco{i}') for i in range(4)]
     arm_deco_slots_vars = [model.NewIntVar(0,3,f'adeco{i}') for i in range(4)]
@@ -40,8 +54,9 @@ def solve_boolean_problem():
 
 
 
+#==============CONTRAINTS==============================
     #SET OBJECTIVE
-    model.Maximize(-head_armor_def_var-body_armor_def_var-arm_armor_def_var-waist_armor_def_var-leg_armor_def_var)
+    #model.Maximize(id_to_deco_dist_var[0]['helm']])
 
     #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
     model.Add(sum(id_to_head_armor_var.values()) == 1)
@@ -56,6 +71,25 @@ def solve_boolean_problem():
     model.Add(arm_armor_def_var!=0)
     model.Add(waist_armor_def_var!=0)
     model.Add(leg_armor_def_var!=0)
+
+    #DECOS CANT EXCEED SLOTS
+    deco_name_to_dist_vars={}
+    for level in range(4):
+        for pair in deco_data['decoLevels'][level]:
+            name=list(pair.keys())[0]
+            if f'{name}_{level+1}' in deco_name_to_dist_vars:
+                model.Add(deco_name_to_dist_vars[f'{name}_{level+1}']['helm']<=head_deco_slots_vars[level])
+                model.Add(deco_name_to_dist_vars[f'{name}_{level+1}']['chest']<=body_deco_slots_vars[level])
+                model.Add(deco_name_to_dist_vars[f'{name}_{level+1}']['arm']<=arm_deco_slots_vars[level])
+                model.Add(deco_name_to_dist_vars[f'{name}_{level+1}']['waist']<=waist_deco_slots_vars[level])
+                model.Add(deco_name_to_dist_vars[f'{name}_{level+1}']['leg']<=leg_deco_slots_vars[level])
+
+            
+
+
+
+
+
 
     #MAPPING ARMOR VARIABLES TO THEIR PROPERTIES
     for id in range(0,len(armor_data['helm'])):
@@ -76,7 +110,7 @@ def solve_boolean_problem():
     for id in range(0,len(armor_data['waist'])):
         model.Add(waist_armor_def_var == armor_data['waist'][id]['def']).OnlyEnforceIf(id_to_waist_armor_var[id])
         for i in range(4):
-            model.Add(waist_deco_slots_vars[i]==armor_data['waist'][id]['decos'][i]).OnlyEnforceIf(id_to_head_armor_var[id])
+            model.Add(waist_deco_slots_vars[i]==armor_data['waist'][id]['decos'][i]).OnlyEnforceIf(id_to_waist_armor_var[id])
 
     for id in range(0,len(armor_data['leg'])):
         model.Add(leg_armor_def_var == armor_data['leg'][id]['def']).OnlyEnforceIf(id_to_leg_armor_var[id])
