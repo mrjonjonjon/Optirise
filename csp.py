@@ -17,6 +17,34 @@ def h(a):
         ans+=a[i]*(i+1)
     return ans
 
+class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
+    """Print intermediate solutions."""
+
+    def __init__(self, variables):
+        cp_model.CpSolverSolutionCallback.__init__(self)
+        self.__variables = variables
+        self.__solution_count = 0
+
+    def on_solution_callback(self):
+        self.__solution_count += 1
+        id_to_body_armor_var=self.__variables[0]
+        selected_body_armor_id = None
+
+        for id, var in id_to_body_armor_var.items():
+            if self.BooleanValue(var):
+                selected_body_armor_id = id
+                break
+
+        solution = {
+            'selected_body_armor': armor_data['chest'][selected_body_armor_id]['name'],
+        }
+
+        print("Solution found:", solution)
+    print()
+
+    def solution_count(self):
+        return self.__solution_count
+    
 
 model = cp_model.CpModel()
 
@@ -55,8 +83,10 @@ leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 
 #==============CONTRAINTS==============================
 #SET OBJECTIVE
-#model.Minimize(deco_name_to_dist_vars[f'WirebugWhisperer_2']['helm'])
-model.Maximize((deco_name_to_dist_vars['AmmoUp_3']['leg']))
+#model.Maximize(deco_name_to_dist_vars[f'AffinitySliding_1']['chest'])
+#model.Minimize((deco_name_to_dist_vars['AffinitySliding_1']['chest']))
+model.Add(sum(body_deco_slots_vars)==0)
+
 
 #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
 model.Add(sum(id_to_head_armor_var.values()) == 1)
@@ -133,51 +163,11 @@ for id in range(0,len(armor_data['leg'])):
 
 # Create a solver and solve the model
 solver = cp_model.CpSolver()
-status = solver.Solve(model)
 
 
 
-#PRINT THE SOLUTION
 
-if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-    selected_head_armor_id = None
-    selected_body_armor_id = None
-    selected_arm_armor_id= None
-    selected_waist_armor_id = None 
-    selected_leg_armor_id = None
-
-    for id, var in id_to_head_armor_var.items():
-        if solver.BooleanValue(var):
-            selected_head_armor_id = id
-            break
-
-    for id, var in id_to_body_armor_var.items():
-        if solver.BooleanValue(var):
-            selected_body_armor_id = id
-            break
-    for id, var in id_to_arm_armor_var.items():
-        if solver.BooleanValue(var):
-            selected_arm_armor_id = id
-            break
-    
-    for id, var in id_to_waist_armor_var.items():
-        if solver.BooleanValue(var):
-            selected_waist_armor_id = id
-            break
-
-    for id, var in id_to_leg_armor_var.items():
-        if solver.BooleanValue(var):
-            selected_leg_armor_id = id
-            break
-
-    solution = {
-        'selected_head_armor': armor_data['helm'][selected_head_armor_id]['name'],
-        'selected_body_armor': armor_data['chest'][selected_body_armor_id]['name'],
-        'selected_arm_armor': armor_data['arm'][selected_arm_armor_id]['name'],
-        'selected_waist_armor': armor_data['waist'][selected_waist_armor_id]['name'],
-        'selected_leg_armor': armor_data['leg'][selected_leg_armor_id]['name'],
-    }
-
-    print("Solution found:", solution)
-    print(solver.Value(deco_name_to_dist_vars['AffinitySliding_1']['helm']))
+solution_printer = VarArraySolutionPrinter([id_to_body_armor_var])
+solver.parameters.enumerate_all_solutions = True
+status = solver.Solve(model,solution_callback=solution_printer)
 
