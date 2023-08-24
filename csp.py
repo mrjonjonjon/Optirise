@@ -36,6 +36,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         id_to_arm_armor_var=self.__variables[2]
         id_to_waist_armor_var=self.__variables[3]
         id_to_leg_armor_var=self.__variables[4]
+        deco_name_to_dist_vars=self.__variables[5]
 
         selected_body_armor_id = None
         selected_arm_armor_id = None
@@ -69,17 +70,26 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
                 break
 
 
-
+        temp = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['helm'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['helm'])>0]
+        temp2 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['chest'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['chest'])>0]
+        temp3 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['arm'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['arm'])>0]
+        temp4 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['waist'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['waist'])>0]
+        temp5 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['leg'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['leg'])>0]
         solution = [
             armor_data['helm'][selected_helm_armor_id]['name'],
+            temp,
             armor_data['chest'][selected_body_armor_id]['name'],
+            temp2,
             armor_data['arm'][selected_arm_armor_id]['name'],
+            temp3,
             armor_data['waist'][selected_waist_armor_id]['name'],
+            temp4,
             armor_data['leg'][selected_leg_armor_id]['name'],
+            temp5,
         ]
         
 
-        print("Solution found:", solution)
+        print("Solution found:", solution,'\n\n')
     print()
 
     def solution_count(self):
@@ -152,11 +162,16 @@ model.Add(leg_armor_def_var!=0)
 
 for level in range(4):  
     #decos can go in higher level slots
-    model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['helm'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
-    model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['chest'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(body_deco_slots_vars[u_level] for u_level in range(level,4)))
-    model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['arm'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(arm_deco_slots_vars[u_level] for u_level in range(level,4)))
-    model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['waist'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(waist_deco_slots_vars[u_level] for u_level in range(level,4)))
-    model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['leg'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['helm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['chest'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(body_deco_slots_vars[u_level] for u_level in range(level,4)))
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['arm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(arm_deco_slots_vars[u_level] for u_level in range(level,4)))
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['waist'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(waist_deco_slots_vars[u_level] for u_level in range(level,4)))
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
+
+    #model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['chest'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(body_deco_slots_vars[u_level] for u_level in range(level,4)))
+    #model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['arm'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(arm_deco_slots_vars[u_level] for u_level in range(level,4)))
+    #model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['waist'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(waist_deco_slots_vars[u_level] for u_level in range(level,4)))
+    #model.Add(sum(deco_name_to_dist_vars[f'{list(pair.keys())[0]}_{u_level+1}']['leg'] for pair in deco_data['decoLevels'][level] for u_level in range(level,4) if f'{list(pair.keys())[0]}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
 
 
 
@@ -194,7 +209,7 @@ for skill_name in deco_data['decos'].keys():
 solver = cp_model.CpSolver()
 
 
-solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var])
+solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars])
 solver.parameters.enumerate_all_solutions = True
 
 status = solver.Solve(model,solution_callback=solution_printer)
