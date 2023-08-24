@@ -29,8 +29,10 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.__solution_count = 0
 
     def on_solution_callback(self):
-        if self.__solution_count>5:return
+        
+
         self.__solution_count += 1
+        if self.__solution_count>10:self.StopSearch()
         id_to_body_armor_var=self.__variables[1]
         id_to_head_armor_var=self.__variables[0]
         id_to_arm_armor_var=self.__variables[2]
@@ -100,6 +102,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
         print("Solution found:", solution,'\n\n')
     print()
+    
 
     def solution_count(self):
         return self.__solution_count
@@ -150,7 +153,14 @@ leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 
 #SET OBJECTIVE
 #model.Add(h(body_deco_slots_vars)+h(head_deco_slots_vars)+h(arm_deco_slots_vars)+h(waist_deco_slots_vars)+h(leg_deco_slots_vars)>=46)
-model.Add(skill_name_to_num_points_var['WindAlignment']>=5)
+
+model.Maximize(skill_name_to_num_points_var['Agitator'])
+#NO DECOS ALLOWED
+#for level in [0,1,2,3]:
+#    for pair in deco_data['decoLevels'][level]:
+#        name=list(pair.keys())[0]
+#        for part in ['helm','chest','arm','waist','leg']:
+#            model.Add(deco_name_to_dist_vars[f'{name}_{level+1}'][part]==0)
 
 #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
 
@@ -169,7 +179,7 @@ model.Add(waist_armor_def_var!=0)
 model.Add(leg_armor_def_var!=0)
 
 #DECOS CANT EXCEED SLOTS
-#master
+
 for level in range(4):  
     #decos can go in higher level slots
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['helm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
@@ -260,4 +270,11 @@ solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_arm
 solver.parameters.enumerate_all_solutions = True
 
 status = solver.Solve(model,solution_callback=solution_printer)
+
+if status == cp_model.OPTIMAL:
+    print('\n' + "Optimal solution found!" + '\n')
+elif status == cp_model.FEASIBLE:
+    print('\n' + "A solution found, but may not be optimal." + '\n')
+else:
+    print('\n' + "No solution found!" + '\n')
 
