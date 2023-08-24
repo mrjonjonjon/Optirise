@@ -112,6 +112,9 @@ model = cp_model.CpModel()
 
 
 
+
+
+
 # Create boolean ARMOR variables
 id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in range(0,len(armor_data['helm']))}
 id_to_body_armor_var = {id:model.NewBoolVar(f'c{id}') for id in range(0,len(armor_data['chest']))}
