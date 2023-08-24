@@ -32,7 +32,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         
 
         self.__solution_count += 1
-        if self.__solution_count>10:self.StopSearch()
+        #if self.__solution_count>100000:self.StopSearch()
         id_to_body_armor_var=self.__variables[1]
         id_to_head_armor_var=self.__variables[0]
         id_to_arm_armor_var=self.__variables[2]
@@ -154,7 +154,21 @@ leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 #SET OBJECTIVE
 #model.Add(h(body_deco_slots_vars)+h(head_deco_slots_vars)+h(arm_deco_slots_vars)+h(waist_deco_slots_vars)+h(leg_deco_slots_vars)>=46)
 
-model.Maximize(skill_name_to_num_points_var['Agitator'])
+#model.Add(skill_name_to_num_points_var['Agitator']>=5)
+#model.Add(skill_name_to_num_points_var['LatentPower']>=5)
+#model.Add(skill_name_to_num_points_var['AttackBoost']>=7)
+#model.Add(skill_name_to_num_points_var['MaximumMight']>=3)
+#model.Add(skill_name_to_num_points_var['MastersTouch']>=3)
+#model.Add(skill_name_to_num_points_var['HungerResistance']>=3)
+#model.Add(skill_name_to_num_points_var['Botanist']>=4)
+#model.Add(skill_name_to_num_points_var['Heaven-Sent']>=2)
+#model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
+#model.Add(skill_name_to_num_points_var['Fortify']>=1)
+#model.Add(skill_name_to_num_points_var['CriticalBoost']>=1)
+#model.Add(skill_name_to_num_points_var['Handicraft']>=1)
+#model.Add(skill_name_to_num_points_var['AmmoUp']>=1)
+#model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
+model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
 #NO DECOS ALLOWED
 #for level in [0,1,2,3]:
 #    for pair in deco_data['decoLevels'][level]:
