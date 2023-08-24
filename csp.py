@@ -169,7 +169,7 @@ model.Add(waist_armor_def_var!=0)
 model.Add(leg_armor_def_var!=0)
 
 #DECOS CANT EXCEED SLOTS
-
+#master
 for level in range(4):  
     #decos can go in higher level slots
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['helm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
