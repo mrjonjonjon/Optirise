@@ -100,7 +100,7 @@ id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor
 #CREATE INTEGER SKILL VARS
 skill_name_to_num_points_var={}
 for skill_name in deco_data['decos'].keys():
-    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,20,f'{skill_name}')
+    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,100,f'{skill_name}')
 
 #CREATE INTEGER DECO VARIABLES
 deco_name_to_dist_vars={}
@@ -130,7 +130,8 @@ leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 #==============CONTRAINTS==============================
 
 #SET OBJECTIVE
-model.Add(h(body_deco_slots_vars)+h(head_deco_slots_vars)+h(arm_deco_slots_vars)+h(waist_deco_slots_vars)+h(leg_deco_slots_vars)>=46)
+#model.Add(h(body_deco_slots_vars)+h(head_deco_slots_vars)+h(arm_deco_slots_vars)+h(waist_deco_slots_vars)+h(leg_deco_slots_vars)>=46)
+model.Add(skill_name_to_num_points_var['Agitator']>=23)
 #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
 
 #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
@@ -187,7 +188,7 @@ for id in range(0,len(armor_data['leg'])):
 
 #MAPPING DECO VARIABLES
 for skill_name in deco_data['decos'].keys():
-    model.Add(sum(deco_name_to_points[f'{skill_name}_{level+1}'] for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)==skill_name_to_num_points_var[skill_name])
+    model.Add(sum(deco_name_to_points[f'{skill_name}_{level+1}']*(sum(deco_name_to_dist_vars[f'{skill_name}_{level+1}'][part] for part in ['helm','chest','arm','waist','leg'] )) for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)==skill_name_to_num_points_var[skill_name])
 
 # Create a solver and solve the model
 solver = cp_model.CpSolver()
@@ -195,5 +196,6 @@ solver = cp_model.CpSolver()
 
 solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var])
 solver.parameters.enumerate_all_solutions = True
+
 status = solver.Solve(model,solution_callback=solution_printer)
 
