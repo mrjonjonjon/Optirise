@@ -9,8 +9,48 @@ with open("json/armor.json", "r") as json_file:
 with open("json/types.json", "r") as json_file:
     json_deco_data = json_file.read()
 
+with open("json/Bow.json", "r") as json_file:
+    json_bow_data = json_file.read()
+
+with open("json/ChargeBlade.json", "r") as json_file:
+    json_chargeblade_data = json_file.read()
+
+with open("json/DualBlades.json", "r") as json_file:
+    json_dualblades_data = json_file.read()
+
+with open("json/GreatSword.json", "r") as json_file:
+    json_greatsword_data = json_file.read()
+with open("json/Gunlance.json", "r") as json_file:
+    json_gunlance_data = json_file.read()
+with open("json/Hammer.json", "r") as json_file:
+    json_hammer_data = json_file.read()
+with open("json/HeavyBowGun.json", "r") as json_file:
+    json_heavybowgun_data = json_file.read()
+with open("json/HuntingHorn.json", "r") as json_file:
+    json_huntinghorn_data = json_file.read()
+with open("json/InsectGlaive.json", "r") as json_file:
+    json_insectglaive_data = json_file.read()
+with open("json/Lance.json", "r") as json_file:
+    json_lance_data = json_file.read()
+with open("json/LightBowGun.json", "r") as json_file:
+    json_lightbowgun_data = json_file.read()
+with open("json/LongSword.json", "r") as json_file:
+    json_longsword_data = json_file.read()
+with open("json/SwitchAxe.json", "r") as json_file:
+    json_switchaxe_data = json_file.read()
+with open("json/SwordNShield.json", "r") as json_file:
+    json_swordandshield_data = json_file.read()
+
+
+
+
+
+
+
+
 armor_data = json.loads(json_armor_data)
 deco_data = json.loads(json_deco_data)
+bow_data = json.loads(json_bow_data)
 
 print('DATA PARSED')
 
@@ -22,6 +62,27 @@ def h(a):
     return ans
 
 #MAPS 
+#wpntypeid to weapon
+id_to_weapon_type = {
+    0: 'bow',
+    1: 'dual blades',
+    2: 'great sword',
+    3: 'long sword',
+    4: 'hammer',
+    5: 'hunting horn',
+    6: 'lance',
+    7: 'gunlance',
+    8: 'switch axe',
+    9: 'charge blade',
+    10: 'insect glaive',
+    11: 'light bowgun',
+    12: 'heavy bowgun',
+    13: 'sword and shield'
+}
+
+
+
+
 deco_name_to_points={}
 for level in range(4):
     for i in range(len(deco_data['decoLevels'][level])):
@@ -115,6 +176,12 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 model = cp_model.CpModel()
 
 #===========DECLARING VARIABLES================================================================
+
+
+#WEAPON TYPE VARIABLE
+weapon_type_var = model.NewIntVar(0,13,F'wpntype')
+
+
 # Create boolean ARMOR variables
 id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in range(0,len(armor_data['helm']))}
 id_to_body_armor_var = {id:model.NewBoolVar(f'c{id}') for id in range(0,len(armor_data['chest']))}
@@ -122,12 +189,33 @@ id_to_arm_armor_var = {id:model.NewBoolVar(f'a{id}') for id in range(0,len(armor
 id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in range(0,len(armor_data['waist']))}
 id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor_data['leg']))}
 
+#Create boolean WEAPON variables
+id_to_bow_var={id:model.NewBoolVar(f'bow{id}') for id in range(0,len(bow_data))}
+id_to_dualblades_var={id:model.NewBoolVar(f'db{id}') for id in range(0,len(dualblades_data))}
+id_to_greatsword_var={id:model.NewBoolVar(f'gs{id}') for id in range(0,len(greatsword_data))}
+id_to_longsword_var={id:model.NewBoolVar(f'ls{id}') for id in range(0,len(longsword_data))}
+id_to_hammer_var={id:model.NewBoolVar(f'hm{id}') for id in range(0,len(hammer_data))}
+id_to_huntinghorn_var={id:model.NewBoolVar(f'huho{id}') for id in range(0,len(huntinghorn_data))}
+id_to_lance_var={id:model.NewBoolVar(f'la{id}') for id in range(0,len(lance_data))}
+id_to_gunlance_var={id:model.NewBoolVar(f'gula{id}') for id in range(0,len(gunlance_data))}
+id_to_switchaxe_var={id:model.NewBoolVar(f'sax{id}') for id in range(0,len(switchaxe_data))}
+id_to_chargeblade_var={id:model.NewBoolVar(f'chb{id}') for id in range(0,len(chargeblade_data))}
+id_to_insectglaive_var={id:model.NewBoolVar(f'ig{id}') for id in range(0,len(insectglaive_data))}
+id_to_lightbowgun_var={id:model.NewBoolVar(f'lbg{id}') for id in range(0,len(lightbowgun_data))}
+id_to_heavybowgun_var={id:model.NewBoolVar(f'hbg{id}') for id in range(0,len(heavybowgun_data))}
+id_to_swordandshield_var={id:model.NewBoolVar(f'sns{id}') for id in range(0,len(swordandshield_data))}
+
+
+
+id_to_weapon_var=None
+model.Add(id_to_weapon_var==id_to_bow_var).OnlyEnforceIf(weapon_type_var[0])
+
 #CREATE INTEGER SKILL VARS
 skill_name_to_num_points_var={}
 for skill_name in deco_data['maxLevel'].keys():
     skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,100,f'{skill_name}')
 
-#CREATE INTEGER DECO VARIABLES
+#CREATE INTEGER DECO DISTRIBUTION VARIABLES
 deco_name_to_dist_vars={}
 for level in range(4):
     for pair in deco_data['decoLevels'][level]:
@@ -141,13 +229,18 @@ arm_armor_def_var = model.NewIntVar(0,1000,'arm_def')
 waist_armor_def_var = model.NewIntVar(0,1000,'waist_def')
 leg_armor_def_var = model.NewIntVar(0,1000,'leg_def')
 
-#DECO SLOT VARIABLES
+
+
+
+#ARMOR DECO SLOT VARIABLES
 head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
 body_deco_slots_vars = [model.NewIntVar(0,3,f'bdeco{i}') for i in range(4)]
 arm_deco_slots_vars = [model.NewIntVar(0,3,f'adeco{i}') for i in range(4)]
 waist_deco_slots_vars = [model.NewIntVar(0,3,f'wdeco{i}') for i in range(4)]
 leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 
+#WEAPON DECO SLOT VARIABLES
+weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wpndeco{i}') for i in range(4)]
 
 #ARMOR SKILL VARIABLES
 head_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
@@ -156,6 +249,8 @@ arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'aa{skill_name}')
 waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
+#WEAPON SKILL VARIABLES
+weapon_skill_name_to_points_var= {skill_name:model.NewIntVar(0,50,f'wpnskill{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
 #==============CONSTRAINTS======================================================================
 
@@ -191,6 +286,10 @@ model.Add(sum(id_to_arm_armor_var.values()) == 1)
 model.Add(sum(id_to_waist_armor_var.values()) == 1)
 model.Add(sum(id_to_leg_armor_var.values()) == 1)
 
+#CAN USE AT MOST ONE WEAPON
+model.Add(sum(id_to_weapon_var.values())==1)
+
+
 #NO LAYERED ARMORS
 model.Add(head_armor_def_var!=0)
 model.Add(body_armor_def_var!=0)
@@ -205,6 +304,12 @@ for level in range(4):
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['arm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(arm_deco_slots_vars[u_level] for u_level in range(level,4)))
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['waist'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(waist_deco_slots_vars[u_level] for u_level in range(level,4)))
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
+
+    model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(weapon_deco_slots_vars[u_level] for u_level in range(level,4)))
+
+#ENFORCING WEAPON TYPE RELATIONSHIP
+model.Add(weapon == armor_data['helm'][id]['def']).OnlyEnforceIf(weapon_type_var[0])  
+
 
 #MAPPING VARIABLES TO JSON ARMOR DATA
 for id in range(0,len(armor_data['helm'])):
