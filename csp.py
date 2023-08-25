@@ -1,6 +1,6 @@
 from ortools.sat.python import cp_model
 import json
-
+from pprint import pprint
 
 #OPENING/LOADING JSONS
 with open("json/armor.json", "r") as json_file:
@@ -37,7 +37,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         
 
         self.__solution_count += 1
-        #if self.__solution_count>100000:self.StopSearch()
+        if self.__solution_count>0:self.StopSearch()
         id_to_body_armor_var=self.__variables[1]
         id_to_head_armor_var=self.__variables[0]
         id_to_arm_armor_var=self.__variables[2]
@@ -89,23 +89,22 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         temp3 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['arm'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['arm'])>0]
         temp4 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['waist'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['waist'])>0]
         temp5 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['leg'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['leg'])>0]
-        solution = [
-            armor_data['helm'][selected_helm_armor_id]['name'],
-            temp,
-            armor_data['chest'][selected_body_armor_id]['name'],
-            temp2,
-            armor_data['arm'][selected_arm_armor_id]['name'],
-            temp3,
-            armor_data['waist'][selected_waist_armor_id]['name'],
-            temp4,
-            armor_data['leg'][selected_leg_armor_id]['name'],
-            temp5,
-            self.Value(hh['WindAlignment']),self.Value(bb['WindAlignment']),self.Value(aa['WindAlignment']),self.Value(ww['WindAlignment']),self.Value(ll['WindAlignment']),\
-            self.Value(s['WindAlignment'])
-        ]
+        solution = {
+            'helm':armor_data['helm'][selected_helm_armor_id]['name'],
+            'helmdecos':temp,
+            'chest':armor_data['chest'][selected_body_armor_id]['name'],
+            'chestdecos':temp2,
+            'arm':armor_data['arm'][selected_arm_armor_id]['name'],
+            'armdecos':temp3,
+            'waist':armor_data['waist'][selected_waist_armor_id]['name'],
+            'waistdecos':temp4,
+            'leg':armor_data['leg'][selected_leg_armor_id]['name'],
+            'legdecos':temp5,
+           
+        }
         
 
-        print("Solution found:", solution,'\n\n')
+        print(f"'Solution found:\n', {(solution)},'\n\n'")
     print()
     
 
