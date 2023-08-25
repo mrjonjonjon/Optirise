@@ -9,15 +9,13 @@ with open("json/armor.json", "r") as json_file:
 with open("json/types.json", "r") as json_file:
     json_deco_data = json_file.read()
 
+
 with open("json/Bow.json", "r") as json_file:
     json_bow_data = json_file.read()
-
 with open("json/ChargeBlade.json", "r") as json_file:
     json_chargeblade_data = json_file.read()
-
 with open("json/DualBlades.json", "r") as json_file:
     json_dualblades_data = json_file.read()
-
 with open("json/GreatSword.json", "r") as json_file:
     json_greatsword_data = json_file.read()
 with open("json/Gunlance.json", "r") as json_file:
@@ -51,6 +49,21 @@ with open("json/SwordNShield.json", "r") as json_file:
 armor_data = json.loads(json_armor_data)
 deco_data = json.loads(json_deco_data)
 bow_data = json.loads(json_bow_data)
+chargeblade_data = json.loads(json_chargeblade_data)
+dualblades_data = json.loads(json_dualblades_data)
+greatsword_data = json.loads(json_greatsword_data)
+gunlance_data = json.loads(json_gunlance_data)
+hammer_data = json.loads(json_hammer_data)
+heavybowgun_data = json.loads(json_heavybowgun_data)
+huntinghorn_data = json.loads(json_huntinghorn_data)
+insectglaive_data = json.loads(json_insectglaive_data)
+lance_data = json.loads(json_lance_data)
+lightbowgun_data = json.loads(json_lightbowgun_data)
+longsword_data = json.loads(json_longsword_data)
+switchaxe_data = json.loads(json_switchaxe_data)
+swordandshield_data = json.loads(json_swordandshield_data)
+
+
 
 print('DATA PARSED')
 
