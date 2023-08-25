@@ -209,12 +209,15 @@ for level in range(4):
 
 #MAPPING VARIABLES TO JSON ARMOR DATA
 for id in range(0,len(armor_data['helm'])):
-    model.Add(head_armor_def_var == armor_data['helm'][id]['def']).OnlyEnforceIf(id_to_head_armor_var[id])      
+    #MAP DEFENSE VARS
+    model.Add(head_armor_def_var == armor_data['helm'][id]['def']).OnlyEnforceIf(id_to_head_armor_var[id])  
+    #MAP HELM ARMOR SKILL POINTS    
     for skill_name in deco_data['maxLevel'].keys():
         if skill_name in armor_data['helm'][id]['skills'].keys():
             model.Add(head_skill_name_to_points_var[skill_name]==armor_data['helm'][id]['skills'][skill_name]).OnlyEnforceIf(id_to_head_armor_var[id])
         else:
             model.Add(head_skill_name_to_points_var[skill_name]==0).OnlyEnforceIf(id_to_head_armor_var[id])
+    #MAP HELM ARMOR SLOTS
     for i in range(4):
         model.Add(head_deco_slots_vars[i]==armor_data['helm'][id]['decos'][i]).OnlyEnforceIf(id_to_head_armor_var[id])
 
@@ -276,7 +279,7 @@ for skill_name in deco_data['maxLevel'].keys():
 
 
 
-#===========CREATING SOLVER================================================================================
+#===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
 solver = cp_model.CpSolver()
 
 
