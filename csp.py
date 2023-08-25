@@ -182,6 +182,8 @@ model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_poi
 
 #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
 
+
+
 #========MANDATORY CONSTRAINTS======================================================================
 #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
 model.Add(sum(id_to_head_armor_var.values()) == 1)
@@ -205,8 +207,7 @@ for level in range(4):
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['waist'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(waist_deco_slots_vars[u_level] for u_level in range(level,4)))
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
 
-#MAPPING ARMOR VARIABLES TO THEIR PROPERTIES
-
+#MAPPING VARIABLES TO JSON ARMOR DATA
 for id in range(0,len(armor_data['helm'])):
     model.Add(head_armor_def_var == armor_data['helm'][id]['def']).OnlyEnforceIf(id_to_head_armor_var[id])      
     for skill_name in deco_data['maxLevel'].keys():
@@ -261,30 +262,37 @@ for id in range(0,len(armor_data['leg'])):
     for i in range(4):
         model.Add(leg_deco_slots_vars[i]==armor_data['leg'][id]['decos'][i]).OnlyEnforceIf(id_to_leg_armor_var[id])
 
-#MAPPING DECO VARIABLES
+#ENFORCING 'skill_name_to_num_points_var' RELATIONSHIP
 for skill_name in deco_data['maxLevel'].keys():
-    model.Add(\
+    model.Add(                                        \
         sum(deco_name_to_points[f'{skill_name}_{level+1}']*(sum(deco_name_to_dist_vars[f'{skill_name}_{level+1}'][part] for part in ['helm','chest','arm','waist','leg'] )) for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)+\
-        (head_skill_name_to_points_var[skill_name]+\
-         body_skill_name_to_points_var[skill_name]+\
-            arm_skill_name_to_points_var[skill_name]+\
-                waist_skill_name_to_points_var[skill_name]+\
-                    leg_skill_name_to_points_var[skill_name])==\
-                skill_name_to_num_points_var[skill_name])
+        (head_skill_name_to_points_var[skill_name] +  \
+         body_skill_name_to_points_var[skill_name] +  \
+         arm_skill_name_to_points_var[skill_name]  +  \
+         waist_skill_name_to_points_var[skill_name]+  \
+         leg_skill_name_to_points_var[skill_name]) == \
+         skill_name_to_num_points_var[skill_name])
 
-# Create a solver and solve the model
+
+
+
+#===========CREATING SOLVER================================================================================
 solver = cp_model.CpSolver()
 
 
-solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
+solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                             head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
-                                                skill_name_to_num_points_var])
+                                            skill_name_to_num_points_var])
 solver.parameters.enumerate_all_solutions = True
 
-#print(armor_data['helm'][121]['name'])
+
+
+#=================SOLVING===========================================================================
 status = solver.Solve(model,solution_callback=solution_printer)
 
 
+
+#==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
 if status == cp_model.OPTIMAL:
     print('\n' + "Optimal solution found!" + '\n')
 elif status == cp_model.FEASIBLE:
