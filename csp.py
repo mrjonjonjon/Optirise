@@ -1,6 +1,8 @@
 from ortools.sat.python import cp_model
-from collections import defaultdict
 import json
+
+
+#OPENING/LOADING JSONS
 with open("json/armor.json", "r") as json_file:
     json_armor_data = json_file.read()
 
@@ -11,12 +13,15 @@ armor_data = json.loads(json_armor_data)
 deco_data = json.loads(json_deco_data)
 
 print('DATA PARSED')
+
+#IDK
 def h(a):
     ans=0
     for i in range(4):
         ans+=a[i]*(i+1)
     return ans
 
+#MAPS 
 deco_name_to_points={}
 for level in range(4):
     for i in range(len(deco_data['decoLevels'][level])):
@@ -110,11 +115,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 model = cp_model.CpModel()
 
-
-
-
-
-
+#===========DECLARING VARIABLES================================================================
 # Create boolean ARMOR variables
 id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in range(0,len(armor_data['helm']))}
 id_to_body_armor_var = {id:model.NewBoolVar(f'c{id}') for id in range(0,len(armor_data['chest']))}
@@ -149,29 +150,29 @@ waist_deco_slots_vars = [model.NewIntVar(0,3,f'wdeco{i}') for i in range(4)]
 leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 
 
+#ARMOR SKILL VARIABLES
+head_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+body_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
 
+#==============CONSTRAINTS======================================================================
 
-#==============CONTRAINTS==============================
+#OBJECTIVES/OPTIONAL CONSTRAINTS
+model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
+model.Add(skill_name_to_num_points_var['Focus']>=3)
+model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
+model.Add(skill_name_to_num_points_var['Slugger']>=3)
+model.Add(skill_name_to_num_points_var['StunResistance']>=3)
+model.Add(skill_name_to_num_points_var['BloodRite']>=3)
+model.Add(skill_name_to_num_points_var['Agitator']>=5)
 
-#SET OBJECTIVE
-#model.Add(h(body_deco_slots_vars)+h(head_deco_slots_vars)+h(arm_deco_slots_vars)+h(waist_deco_slots_vars)+h(leg_deco_slots_vars)>=46)
+model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
 
-#model.Add(skill_name_to_num_points_var['Agitator']>=5)
-#model.Add(skill_name_to_num_points_var['LatentPower']>=5)
-#model.Add(skill_name_to_num_points_var['AttackBoost']>=7)
-#model.Add(skill_name_to_num_points_var['MaximumMight']>=3)
-#model.Add(skill_name_to_num_points_var['MastersTouch']>=3)
-#model.Add(skill_name_to_num_points_var['HungerResistance']>=3)
-#model.Add(skill_name_to_num_points_var['Botanist']>=4)
-#model.Add(skill_name_to_num_points_var['Heaven-Sent']>=2)
-#model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
-#model.Add(skill_name_to_num_points_var['Fortify']>=1)
-#model.Add(skill_name_to_num_points_var['CriticalBoost']>=1)
-#model.Add(skill_name_to_num_points_var['Handicraft']>=1)
-#model.Add(skill_name_to_num_points_var['AmmoUp']>=1)
 #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
-model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
+#model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
 #NO DECOS ALLOWED
 #for level in [0,1,2,3]:
 #    for pair in deco_data['decoLevels'][level]:
@@ -181,6 +182,7 @@ model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
 
 #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
 
+#========MANDATORY CONSTRAINTS======================================================================
 #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
 model.Add(sum(id_to_head_armor_var.values()) == 1)
 model.Add(sum(id_to_body_armor_var.values()) == 1)
@@ -196,9 +198,7 @@ model.Add(waist_armor_def_var!=0)
 model.Add(leg_armor_def_var!=0)
 
 #DECOS CANT EXCEED SLOTS
-
 for level in range(4):  
-    #decos can go in higher level slots
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['helm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['chest'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(body_deco_slots_vars[u_level] for u_level in range(level,4)))
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['arm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(arm_deco_slots_vars[u_level] for u_level in range(level,4)))
@@ -206,11 +206,6 @@ for level in range(4):
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
 
 #MAPPING ARMOR VARIABLES TO THEIR PROPERTIES
-head_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-body_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
 for id in range(0,len(armor_data['helm'])):
     model.Add(head_armor_def_var == armor_data['helm'][id]['def']).OnlyEnforceIf(id_to_head_armor_var[id])      
@@ -286,7 +281,9 @@ solution_printer = VarArraySolutionPrinter([ id_to_head_armor_var,id_to_body_arm
                                                 skill_name_to_num_points_var])
 solver.parameters.enumerate_all_solutions = True
 
+#print(armor_data['helm'][121]['name'])
 status = solver.Solve(model,solution_callback=solution_printer)
+
 
 if status == cp_model.OPTIMAL:
     print('\n' + "Optimal solution found!" + '\n')
