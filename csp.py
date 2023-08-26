@@ -50,7 +50,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         ww=self.__variables[9]
         ll=self.__variables[10]
         s=self.__variables[11]
-
+    
 
         selected_body_armor_id = None
         selected_arm_armor_id = None
