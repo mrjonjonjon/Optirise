@@ -62,7 +62,7 @@ lightbowgun_data = json.loads(json_lightbowgun_data)
 longsword_data = json.loads(json_longsword_data)
 switchaxe_data = json.loads(json_switchaxe_data)
 swordandshield_data = json.loads(json_swordandshield_data)
-
+print(len(bow_data['weapons']),len(chargeblade_data['weapons']),len(swordandshield_data['weapons']))
 
 
 print('DATA PARSED')
@@ -78,19 +78,19 @@ def h(a):
 #wpntypeid to weapon
 id_to_weapon_type = {
     0: 'bow',
-    1: 'dual blades',
-    2: 'great sword',
-    3: 'long sword',
+    1: 'dualblades',
+    2: 'greatsword',
+    3: 'longsword',
     4: 'hammer',
-    5: 'hunting horn',
+    5: 'huntinghorn',
     6: 'lance',
     7: 'gunlance',
-    8: 'switch axe',
-    9: 'charge blade',
-    10: 'insect glaive',
-    11: 'light bowgun',
-    12: 'heavy bowgun',
-    13: 'sword and shield'
+    8: 'switchaxe',
+    9: 'chargeblade',
+    10: 'insectglaive',
+    11: 'lightbowgun',
+    12: 'heavybowgun',
+    13: 'swordandshield'
 }
 
 
@@ -192,7 +192,7 @@ model = cp_model.CpModel()
 
 
 #WEAPON TYPE VARIABLE
-weapon_type_var = model.NewIntVar(0,13,F'wpntype')
+weapon_type_var = model.NewIntVar(0,13,f'aaaa')#[model.NewBoolVar(f'wpntype{i}') for i in range(14)]
 
 
 # Create boolean ARMOR variables
@@ -202,26 +202,30 @@ id_to_arm_armor_var = {id:model.NewBoolVar(f'a{id}') for id in range(0,len(armor
 id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in range(0,len(armor_data['waist']))}
 id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor_data['leg']))}
 
-#Create boolean WEAPON variables
-id_to_bow_var={id:model.NewBoolVar(f'bow{id}') for id in range(0,len(bow_data))}
-id_to_dualblades_var={id:model.NewBoolVar(f'db{id}') for id in range(0,len(dualblades_data))}
-id_to_greatsword_var={id:model.NewBoolVar(f'gs{id}') for id in range(0,len(greatsword_data))}
-id_to_longsword_var={id:model.NewBoolVar(f'ls{id}') for id in range(0,len(longsword_data))}
-id_to_hammer_var={id:model.NewBoolVar(f'hm{id}') for id in range(0,len(hammer_data))}
-id_to_huntinghorn_var={id:model.NewBoolVar(f'huho{id}') for id in range(0,len(huntinghorn_data))}
-id_to_lance_var={id:model.NewBoolVar(f'la{id}') for id in range(0,len(lance_data))}
-id_to_gunlance_var={id:model.NewBoolVar(f'gula{id}') for id in range(0,len(gunlance_data))}
-id_to_switchaxe_var={id:model.NewBoolVar(f'sax{id}') for id in range(0,len(switchaxe_data))}
-id_to_chargeblade_var={id:model.NewBoolVar(f'chb{id}') for id in range(0,len(chargeblade_data))}
-id_to_insectglaive_var={id:model.NewBoolVar(f'ig{id}') for id in range(0,len(insectglaive_data))}
-id_to_lightbowgun_var={id:model.NewBoolVar(f'lbg{id}') for id in range(0,len(lightbowgun_data))}
-id_to_heavybowgun_var={id:model.NewBoolVar(f'hbg{id}') for id in range(0,len(heavybowgun_data))}
-id_to_swordandshield_var={id:model.NewBoolVar(f'sns{id}') for id in range(0,len(swordandshield_data))}
+#Create  WEAPON variables
+id_to_bow_var=model.NewIntVar(0,len(bow_data),'bbow')
+id_to_dualblades_var=model.NewIntVar(0,len(dualblades_data),'dbbdd')
+id_to_greatsword_var=model.NewIntVar(0,len(greatsword_data),'avarvw')
+id_to_longsword_var=model.NewIntVar(0,len(longsword_data),'varvawrv')
+id_to_hammer_var=model.NewIntVar(0,len(hammer_data),'vrawv')
+id_to_huntinghorn_var=model.NewIntVar(0,len(huntinghorn_data),'rvar')
+id_to_lance_var=model.NewIntVar(0,len(lance_data),'rarrc')
+id_to_gunlance_var=model.NewIntVar(0,len(gunlance_data),'rcarc')
+id_to_switchaxe_var=model.NewIntVar(0,len(switchaxe_data),'gvvvrv')
+id_to_chargeblade_var=model.NewIntVar(0,len(chargeblade_data),'rwrwsw')
+id_to_insectglaive_var=model.NewIntVar(0,len(insectglaive_data),'aorjvnr')
+id_to_lightbowgun_var=model.NewIntVar(0,len(lightbowgun_data),'w0inc')
+id_to_heavybowgun_var=model.NewIntVar(0,len(heavybowgun_data),'wicnec')
+id_to_swordandshield_var=model.NewIntVar(0,len(swordandshield_data),'wcjdcon')
 
 
+#ENFORCE IDTOWEAPONVAT
+id_to_weapon_var=model.NewIntVar(0,500,'fvoiemnvinm')
+for i,weapon_type in enumerate(list(id_to_weapon_type.values())):
+    to_exec = f'model.Add(id_to_weapon_var==id_to_{weapon_type}_var).OnlyEnforceIf(weapon_type_var.IsEqualTo(0))'
+    exec(to_exec)
 
-id_to_weapon_var=None
-model.Add(id_to_weapon_var==id_to_bow_var).OnlyEnforceIf(weapon_type_var[0])
+
 
 #CREATE INTEGER SKILL VARS
 skill_name_to_num_points_var={}
@@ -254,6 +258,12 @@ leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
 
 #WEAPON DECO SLOT VARIABLES
 weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wpndeco{i}') for i in range(4)]
+
+
+for weapon_type in id_to_weapon_type.values():
+    for i in range(4):
+        model.Add(weapon_deco_slots_vars[i]==eval(f"{weapon_type}_data['weapons'][{i}]['decos'][{i}]")).OnlyEnforceIf(weapon_type_var.IsEqualTo(id_to_weapon_type[weapon_type]))
+
 
 #ARMOR SKILL VARIABLES
 head_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
