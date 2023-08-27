@@ -124,6 +124,8 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         ww=self.__variables[9]
         ll=self.__variables[10]
         s=self.__variables[11]
+        weapon_var = self.__variables[-2]
+        weapon_type_var = self.__variables[-1]
 
 
         selected_body_armor_id = None
@@ -163,7 +165,13 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         temp3 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['arm'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['arm'])>0]
         temp4 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['waist'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['waist'])>0]
         temp5 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['leg'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['leg'])>0]
+
+        weapon_type = id_to_weapon_type[self.Value(weapon_type_var)]
+        print(f'{weapon_type}_data[{self.Value(weapon_var)}]["weapons"]["weapon"]')
+        weapon_name = eval(f'{weapon_type}_data["weapons"][{self.Value(weapon_var)}]["weapon"]')
+
         solution = {
+            'weapon_name':weapon_name,
             'helm':armor_data['helm'][selected_helm_armor_id]['name'],
             'helmdecos':temp,
             'chest':armor_data['chest'][selected_body_armor_id]['name'],
@@ -220,9 +228,9 @@ id_to_swordandshield_var=model.NewIntVar(0,len(swordandshield_data),'wcjdcon')
 
 
 #ENFORCE IDTOWEAPONVAR INTERMEDIATE VARIABLE
-id_to_weapon_var=model.NewIntVar(0,500,'fvoiemnvinm')
+weapon_var=model.NewIntVar(0,500,'fvoiemnvinm')
 for i,weapon_type in enumerate(list(id_to_weapon_type.values())):
-    to_exec = f'model.Add(id_to_weapon_var==id_to_{weapon_type}_var).OnlyEnforceIf(weapon_type_var.IsEqualTo({i}))'
+    to_exec = f'model.Add(weapon_var==id_to_{weapon_type}_var).OnlyEnforceIf(weapon_type_var.IsEqualTo({i}))'
     exec(to_exec)
 
 
@@ -310,9 +318,6 @@ model.Add(sum(id_to_body_armor_var.values()) == 1)
 model.Add(sum(id_to_arm_armor_var.values()) == 1)
 model.Add(sum(id_to_waist_armor_var.values()) == 1)
 model.Add(sum(id_to_leg_armor_var.values()) == 1)
-
-#CAN USE AT MOST ONE WEAPON
-#model.Add(sum(id_to_weapon_var)==1)
 
 
 #NO LAYERED ARMORS
@@ -411,7 +416,8 @@ solver = cp_model.CpSolver()
 
 solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                             head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
-                                            skill_name_to_num_points_var])
+                                            skill_name_to_num_points_var,\
+                                             weapon_var,weapon_type_var])
 solver.parameters.enumerate_all_solutions = True
 
 
