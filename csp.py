@@ -219,10 +219,10 @@ id_to_heavybowgun_var=model.NewIntVar(0,len(heavybowgun_data),'wicnec')
 id_to_swordandshield_var=model.NewIntVar(0,len(swordandshield_data),'wcjdcon')
 
 
-#ENFORCE IDTOWEAPONVAT
+#ENFORCE IDTOWEAPONVAR INTERMEDIATE VARIABLE
 id_to_weapon_var=model.NewIntVar(0,500,'fvoiemnvinm')
 for i,weapon_type in enumerate(list(id_to_weapon_type.values())):
-    to_exec = f'model.Add(id_to_weapon_var==id_to_{weapon_type}_var).OnlyEnforceIf(weapon_type_var.IsEqualTo(0))'
+    to_exec = f'model.Add(id_to_weapon_var==id_to_{weapon_type}_var).OnlyEnforceIf(weapon_type_var.IsEqualTo({i}))'
     exec(to_exec)
 
 
@@ -237,7 +237,7 @@ deco_name_to_dist_vars={}
 for level in range(4):
     for pair in deco_data['decoLevels'][level]:
         name=list(pair.keys())[0]
-        deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg']}
+        deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg','weapon']}
                     
 #DEFENSE VARIABLES
 head_armor_def_var = model.NewIntVar(0,1000,'head_def')
@@ -255,14 +255,16 @@ body_deco_slots_vars = [model.NewIntVar(0,3,f'bdeco{i}') for i in range(4)]
 arm_deco_slots_vars = [model.NewIntVar(0,3,f'adeco{i}') for i in range(4)]
 waist_deco_slots_vars = [model.NewIntVar(0,3,f'wdeco{i}') for i in range(4)]
 leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
+weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wdeco{i}') for i in range(4)]
 
 #WEAPON DECO SLOT VARIABLES
 weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wpndeco{i}') for i in range(4)]
 
 
-for weapon_type in id_to_weapon_type.values():
-    for i in range(4):
-        model.Add(weapon_deco_slots_vars[i]==eval(f"{weapon_type}_data['weapons'][{i}]['decos'][{i}]")).OnlyEnforceIf(weapon_type_var.IsEqualTo(id_to_weapon_type[weapon_type]))
+for weapon_type_id,weapon_type in id_to_weapon_type.items():
+    for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
+        for i in range(4):
+            model.Add(weapon_deco_slots_vars[i]==eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf(weapon_type_var.IsEqualTo(id_to_weapon_type[weapon_type_id]))
 
 
 #ARMOR SKILL VARIABLES
@@ -310,7 +312,7 @@ model.Add(sum(id_to_waist_armor_var.values()) == 1)
 model.Add(sum(id_to_leg_armor_var.values()) == 1)
 
 #CAN USE AT MOST ONE WEAPON
-model.Add(sum(id_to_weapon_var.values())==1)
+#model.Add(sum(id_to_weapon_var)==1)
 
 
 #NO LAYERED ARMORS
@@ -329,9 +331,6 @@ for level in range(4):
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
 
     model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['leg'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(weapon_deco_slots_vars[u_level] for u_level in range(level,4)))
-
-#ENFORCING WEAPON TYPE RELATIONSHIP
-model.Add(weapon == armor_data['helm'][id]['def']).OnlyEnforceIf(weapon_type_var[0])  
 
 
 #MAPPING VARIABLES TO JSON ARMOR DATA
