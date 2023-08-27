@@ -62,8 +62,6 @@ lightbowgun_data = json.loads(json_lightbowgun_data)
 longsword_data = json.loads(json_longsword_data)
 switchaxe_data = json.loads(json_switchaxe_data)
 swordandshield_data = json.loads(json_swordandshield_data)
-print(len(bow_data['weapons']),len(chargeblade_data['weapons']),len(swordandshield_data['weapons']))
-
 
 print('DATA PARSED')
 
@@ -179,11 +177,8 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         temp4 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['waist'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['waist'])>0]
         temp5 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['leg'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['leg'])>0]
         temp6 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['weapon'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['weapon'])>0]
-        print(selected_weapon_id)
         weapon_type = id_to_weapon_type[selected_weapon_type_id]
-        print(weapon_type,len(eval(f'{weapon_type}_data["weapons"]')))
         weapon_name = eval(f'{weapon_type}_data["weapons"][{selected_weapon_id}]["weapon"]')
-        print(weapon_name)
         solution = {
             'weapon_name':weapon_name,
             'weapon_decos':temp6,
@@ -215,8 +210,6 @@ model = cp_model.CpModel()
 #===========DECLARING VARIABLES================================================================
 
 
-#WEAPON TYPE VARIABLE
-weapon_type_var = model.NewIntVar(0,13,f'aaaa')#[model.NewBoolVar(f'wpntype{i}') for i in range(14)]
 
 
 # Create boolean ARMOR variables
@@ -243,8 +236,7 @@ id_to_heavybowgun_var=model.NewIntVar(0,len(heavybowgun_data)-1,'wicnec')
 id_to_swordandshield_var=model.NewIntVar(0,len(swordandshield_data)-1,'wcjdcon')
 
 
-#ENFORCE IDTOWEAPONVAR INTERMEDIATE VARIABLE
-weapon_var=model.NewIntVar(0,500,'fvoiemnvinm')
+
 
 test_weapon_type_vars=[model.NewBoolVar(f'{i}_twtp') for i in range(14)]
 test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
@@ -296,6 +288,8 @@ weapon_skill_name_to_points_var= {skill_name:model.NewIntVar(0,50,f'wpnskill{ski
 #==============CONSTRAINTS======================================================================
 
 #OBJECTIVES/OPTIONAL CONSTRAINTS
+
+
 #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
 #model.Add(skill_name_to_num_points_var['Focus']>=3)
 #model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
@@ -305,15 +299,20 @@ weapon_skill_name_to_points_var= {skill_name:model.NewIntVar(0,50,f'wpnskill{ski
 #model.Add(skill_name_to_num_points_var['Agitator']>=5)
 
 #model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
-model.Maximize(h(weapon_deco_slots_vars))
+model.Add(h(weapon_deco_slots_vars)==12)
 model.Add(id_to_head_armor_var[0]==1)
 model.Add(id_to_body_armor_var[0]==1)
 model.Add(id_to_arm_armor_var[0]==1)
 model.Add(id_to_waist_armor_var[0]==1)
 model.Add(id_to_leg_armor_var[0]==1)
 #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
-#model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
-#NO DECOS ALLOWED
+model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
+
+
+
+
+
+#NO DECOS ALLOWED(except on weapons)
 for level in [0,1,2,3]:
     for pair in deco_data['decoLevels'][level]:
         name=list(pair.keys())[0]
@@ -331,6 +330,10 @@ model.Add(sum(id_to_body_armor_var.values()) == 1)
 model.Add(sum(id_to_arm_armor_var.values()) == 1)
 model.Add(sum(id_to_waist_armor_var.values()) == 1)
 model.Add(sum(id_to_leg_armor_var.values()) == 1)
+
+#CAN HAVE AT MOST ONE WEAPON
+model.Add(sum(test_weapon_vars)==1)
+model.Add(sum(test_weapon_type_vars)==1)
 
 
 #NO LAYERED ARMORS
@@ -413,17 +416,17 @@ for id in range(0,len(armor_data['leg'])):
 
 
 
-model.Add(sum(test_weapon_vars)==1)
-model.Add(sum(test_weapon_type_vars)==1)
+
 for weapon_type_id,weapon_type in id_to_weapon_type.items():
     numwep = len(eval(f"{weapon_type}_data['weapons']"))
     model.Add(sum(test_weapon_vars[numwep:])==0).OnlyEnforceIf(test_weapon_type_vars[weapon_type_id])
 
 for weapon_type_id,weapon_type in id_to_weapon_type.items():
     for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
-        b = test_weapon_type_vars[weapon_type_id]
 
+        b = test_weapon_type_vars[weapon_type_id]
         c = test_weapon_vars[weapon_id]
+
         for i in range(4):
             model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
 
@@ -431,7 +434,7 @@ for weapon_type_id,weapon_type in id_to_weapon_type.items():
 #ENFORCING 'skill_name_to_num_points_var' RELATIONSHIP
 for skill_name in deco_data['maxLevel'].keys():
     model.Add(                                        \
-        sum(deco_name_to_points[f'{skill_name}_{level+1}']*(sum(deco_name_to_dist_vars[f'{skill_name}_{level+1}'][part] for part in ['helm','chest','arm','waist','leg'] )) for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)+\
+        sum(deco_name_to_points[f'{skill_name}_{level+1}']*(sum(deco_name_to_dist_vars[f'{skill_name}_{level+1}'][part] for part in ['helm','chest','arm','waist','leg','weapon'] )) for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)+\
         (head_skill_name_to_points_var[skill_name] +  \
          body_skill_name_to_points_var[skill_name] +  \
          arm_skill_name_to_points_var[skill_name]  +  \
