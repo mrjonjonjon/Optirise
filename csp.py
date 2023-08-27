@@ -102,12 +102,15 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__variables = variables
         self.__solution_count = 0
+        self.printed_solution_count=0
+        self.armor_sets_decos=set()
 
     def on_solution_callback(self):
         
 
         self.__solution_count += 1
-        #if self.__solution_count>0:self.StopSearch()
+       
+        #if self.__solution_count>100:self.StopSearch()
         id_to_body_armor_var=self.__variables[1]
         id_to_head_armor_var=self.__variables[0]
         id_to_arm_armor_var=self.__variables[2]
@@ -175,8 +178,20 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         temp4 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['waist'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['waist'])>0]
         temp5 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['leg'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['leg'])>0]
         temp6 = [(deco_name,self.Value(deco_name_to_dist_vars[deco_name]['weapon'])) for deco_name in deco_name_to_dist_vars.keys() if self.Value(deco_name_to_dist_vars[deco_name]['weapon'])>0]
+
+        helm_name=armor_data['helm'][selected_helm_armor_id]['name']
+        chest_name=armor_data['chest'][selected_body_armor_id]['name']
+        arm_name=armor_data['arm'][selected_arm_armor_id]['name']
+        waist_name=armor_data['waist'][selected_waist_armor_id]['name']
+        leg_name=armor_data['leg'][selected_leg_armor_id]['name']
+
+        if (helm_name,chest_name,arm_name,waist_name,leg_name) in self.armor_sets_decos:return
+
+        self.printed_solution_count+=1
         weapon_type = id_to_weapon_type[selected_weapon_type_id]
         weapon_name = eval(f'{weapon_type}_data["weapons"][{selected_weapon_id}]["weapon"]')
+
+        print(f"SOLUTION #{self.printed_solution_count}:\n")
         solution = {
             'weapon_name':weapon_name,
             'weapon_decos':temp6,
@@ -193,6 +208,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
             'legdecos':temp5,
            
         }
+        self.armor_sets_decos.add((helm_name,chest_name,arm_name,waist_name,leg_name))
         
 
         print(f"'Solution found:\n', {(solution)},'\n\n'")
@@ -226,7 +242,7 @@ test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
 #CREATE INTEGER SKILL VARS
 skill_name_to_num_points_var={}
 for skill_name in deco_data['maxLevel'].keys():
-    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,100,f'{skill_name}')
+    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'{skill_name}')
 
 #CREATE INTEGER DECO DISTRIBUTION VARIABLES
 deco_name_to_dist_vars={}
@@ -243,7 +259,8 @@ for level in range(4):
 #leg_armor_def_var = model.NewIntVar(0,1000,'leg_def')
 
 
-
+#RAW ATTACK VAR
+#raw_attack_var=model.NewIntVar(0,1000)
 
 #ARMOR DECO SLOT VARIABLES
 head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
@@ -258,33 +275,30 @@ weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wpndeco{i}') for i in range(4)]
 
 
 #ARMOR SKILL VARIABLES
-head_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-body_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,50,f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+head_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+body_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
 
 #==============CONSTRAINTS======================================================================
 
 #OBJECTIVES/OPTIONAL CONSTRAINTS
+#fix weapon
+model.Add(test_weapon_type_vars[3]==1)
+model.Add(test_weapon_vars[0]==1)
 
-
-#model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
-#model.Add(skill_name_to_num_points_var['Focus']>=3)
-#model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
-#model.Add(skill_name_to_num_points_var['Slugger']>=3)
-#model.Add(skill_name_to_num_points_var['StunResistance']>=3)
-#model.Add(skill_name_to_num_points_var['BloodRite']>=3)
-#model.Add(skill_name_to_num_points_var['Agitator']>=5)
+#skill point condtrainst
+model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
+model.Add(skill_name_to_num_points_var['Focus']>=3)
+model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
+model.Add(skill_name_to_num_points_var['Slugger']>=3)
+model.Add(skill_name_to_num_points_var['StunResistance']>=3)
+model.Add(skill_name_to_num_points_var['BloodRite']>=3)
+model.Add(skill_name_to_num_points_var['Agitator']>=5)
 
 #model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
-model.Add(h(weapon_deco_slots_vars)==12)
-model.Add(id_to_head_armor_var[0]==1)
-model.Add(id_to_body_armor_var[0]==1)
-model.Add(id_to_arm_armor_var[0]==1)
-model.Add(id_to_waist_armor_var[0]==1)
-model.Add(id_to_leg_armor_var[0]==1)
 #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
 #model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
 
@@ -293,12 +307,12 @@ model.Add(id_to_leg_armor_var[0]==1)
 
 
 #NO DECOS ALLOWED
-for level in [0,1,2,3]:
+'''for level in [0,1,2,3]:
     for pair in deco_data['decoLevels'][level]:
         name=list(pair.keys())[0]
         for part in ['helm','chest','arm','waist','leg','weapon']:
             model.Add(deco_name_to_dist_vars[f'{name}_{level+1}'][part]==0)
-
+'''
 #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
 
 
@@ -436,7 +450,6 @@ solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armo
 solver.parameters.enumerate_all_solutions = True
 
 
-
 #=================SOLVING===========================================================================
 status = solver.Solve(model,solution_callback=solution_printer)
 #solver.Solve(model, cp_model.VarArraySolutionPrinter([]))
@@ -451,3 +464,14 @@ elif status == cp_model.FEASIBLE:
 else:
     print('\n' + "No solution found!" + '\n')
 
+
+
+
+
+#MISC
+'''Reduce the amount of variables.
+Reduce the domain of the integer variables.
+Run the solver with multiples threads usingsolver.parameters.num_search_workers = 8.
+Prefer boolean over integer variables/contraints.
+Set redundant constraints and/or symmetry breaking constraints.
+Segregate your problem and merge the results.'''
