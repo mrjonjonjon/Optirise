@@ -217,22 +217,6 @@ id_to_arm_armor_var = {id:model.NewBoolVar(f'a{id}') for id in range(0,len(armor
 id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in range(0,len(armor_data['waist']))}
 id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor_data['leg']))}
 
-#Create  WEAPON variables
-id_to_bow_var=model.NewIntVar(0,len(bow_data)-1,'bbow')
-id_to_dualblades_var=model.NewIntVar(0,len(dualblades_data)-1,'dbbdd')
-id_to_greatsword_var=model.NewIntVar(0,len(greatsword_data)-1,'avarvw')
-id_to_longsword_var=model.NewIntVar(0,len(longsword_data)-1,'varvawrv')
-id_to_hammer_var=model.NewIntVar(0,len(hammer_data)-1,'vrawv')
-id_to_huntinghorn_var=model.NewIntVar(0,len(huntinghorn_data)-1,'rvar')
-id_to_lance_var=model.NewIntVar(0,len(lance_data)-1,'rarrc')
-id_to_gunlance_var=model.NewIntVar(0,len(gunlance_data)-1,'rcarc')
-id_to_switchaxe_var=model.NewIntVar(0,len(switchaxe_data)-1,'gvvvrv')
-id_to_chargeblade_var=model.NewIntVar(0,len(chargeblade_data)-1,'rwrwsw')
-id_to_insectglaive_var=model.NewIntVar(0,len(insectglaive_data)-1,'aorjvnr')
-id_to_lightbowgun_var=model.NewIntVar(0,len(lightbowgun_data)-1,'w0inc')
-id_to_heavybowgun_var=model.NewIntVar(0,len(heavybowgun_data)-1,'wicnec')
-id_to_swordandshield_var=model.NewIntVar(0,len(swordandshield_data)-1,'wcjdcon')
-
 
 
 
@@ -308,7 +292,7 @@ model.Add(id_to_leg_armor_var[0]==1)
 
 
 
-#NO DECOS ALLOWED(except on weapons)
+#NO DECOS ALLOWED
 for level in [0,1,2,3]:
     for pair in deco_data['decoLevels'][level]:
         name=list(pair.keys())[0]
@@ -455,6 +439,7 @@ solver.parameters.enumerate_all_solutions = True
 
 #=================SOLVING===========================================================================
 status = solver.Solve(model,solution_callback=solution_printer)
+#solver.Solve(model, cp_model.VarArraySolutionPrinter([]))
 
 
 
