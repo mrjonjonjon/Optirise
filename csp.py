@@ -289,7 +289,7 @@ leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel']
 model.Add(test_weapon_type_vars[3]==1)
 model.Add(test_weapon_vars[0]==1)
 
-#skill point condtrainst
+#skill point constraints
 model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
 model.Add(skill_name_to_num_points_var['Focus']>=3)
 model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
@@ -468,7 +468,7 @@ else:
 
 
 
-#MISC
+#TODO
 '''Reduce the amount of variables.
 Reduce the domain of the integer variables.
 Run the solver with multiples threads usingsolver.parameters.num_search_workers = 8.
