@@ -126,7 +126,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         weapon_type_vars = self.__variables[-2]
         weapon_vars = self.__variables[-1]
 
-
+#
         selected_body_armor_id = None
         selected_arm_armor_id = None
         selected_helm_armor_id=None
