@@ -8,11 +8,11 @@ from thefuzz import process
 
 
 
-# Open the JSON file and read its content
+
 with open("mhrice.json", "r") as json_file:
     json_data = json_file.read()
 
-# Parse the JSON data into a Python dictionary
+
 parsed_data = json.loads(json_data)
 print('DATA PARSED')
 maxraw=0
