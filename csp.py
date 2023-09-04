@@ -1,7 +1,7 @@
 from ortools.sat.python import cp_model
 import json
 from pprint import pprint
-
+import multiprocessing
 #OPENING/LOADING JSONS
 with open("json/armor.json", "r") as json_file:
     json_armor_data = json_file.read()
@@ -290,13 +290,18 @@ model.Add(test_weapon_type_vars[3]==1)
 model.Add(test_weapon_vars[0]==1)
 
 #skill point constraints
-model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
-model.Add(skill_name_to_num_points_var['Focus']>=3)
-model.Add(skill_name_to_num_points_var['CriticalEye']>=7)
-model.Add(skill_name_to_num_points_var['Slugger']>=3)
-model.Add(skill_name_to_num_points_var['StunResistance']>=3)
-model.Add(skill_name_to_num_points_var['BloodRite']>=3)
+model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
+model.Add(skill_name_to_num_points_var['GuardUp']>=3)
 model.Add(skill_name_to_num_points_var['Agitator']>=5)
+model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
+model.Add(skill_name_to_num_points_var['BladescaleHone']>=3)
+model.Add(skill_name_to_num_points_var['WirebugWhisperer']>=3)
+model.Add(skill_name_to_num_points_var['Bombardier']>=3)
+model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
+model.Add(skill_name_to_num_points_var['Embolden']>=1)
+model.Add(skill_name_to_num_points_var['Guts']>=2)
+
+
 
 #model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
 #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
@@ -439,8 +444,12 @@ for skill_name in deco_data['maxLevel'].keys():
 
 
 
+#model.AddDecisionStrategy(task_starts, cp_model.CHOOSE_LOWEST_MIN, cp_model.)
+
+
 #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
 solver = cp_model.CpSolver()
+solver.parameters.num_workers=0
 
 
 solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
@@ -452,7 +461,6 @@ solver.parameters.enumerate_all_solutions = True
 
 #=================SOLVING===========================================================================
 status = solver.Solve(model,solution_callback=solution_printer)
-#solver.Solve(model, cp_model.VarArraySolutionPrinter([]))
 
 
 
@@ -474,4 +482,13 @@ Reduce the domain of the integer variables.
 Run the solver with multiples threads usingsolver.parameters.num_search_workers = 8.
 Prefer boolean over integer variables/contraints.
 Set redundant constraints and/or symmetry breaking constraints.
-Segregate your problem and merge the results.'''
+Segregate your problem and merge the results.
+
+
+
+You cannot inside the solver. You need to parallelize it yourself.
+  model.AddDecisionStrategy(
+        task_starts, cp_model.CHOOSE_LOWEST_MIN, cp_model.SELECT_MIN_VALUE)
+
+
+'''
