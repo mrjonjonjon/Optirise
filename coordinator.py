@@ -33,3 +33,7 @@ if __name__ == "__main__":
     #Function took 247.63 seconds to run.
     #Function took 159.87 seconds to run.
     #Function took 161.02 seconds to run.
+
+
+    #======SHUFFLING========
+    #Function took 119.93 seconds to run.

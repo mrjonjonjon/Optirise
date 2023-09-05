@@ -2,6 +2,7 @@ from ortools.sat.python import cp_model
 import json
 from pprint import pprint
 import multiprocessing
+import random
 from utils import sharded_range,sharded_range_for
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     def __init__(self, variables):
@@ -176,6 +177,16 @@ def get_solutions(shard_index,num_shards):
 
     armor_data = json.loads(json_armor_data)
     deco_data = json.loads(json_deco_data)
+
+
+    random.seed(8)
+    for k in armor_data.keys():
+        #armor_data[k] = armor_data[k][40:]
+        random.shuffle(armor_data[k])
+
+
+    
+
     bow_data = json.loads(json_bow_data)
     chargeblade_data = json.loads(json_chargeblade_data)
     dualblades_data = json.loads(json_dualblades_data)
@@ -456,6 +467,7 @@ def get_solutions(shard_index,num_shards):
 
     #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
     solver = cp_model.CpSolver()
+ 
     solver.parameters.num_workers=1
 
 
