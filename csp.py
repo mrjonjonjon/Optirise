@@ -290,7 +290,7 @@ model.Add(test_weapon_type_vars[3]==1)
 model.Add(test_weapon_vars[0]==1)
 
 #skill point constraints
-model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
+'''model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
 model.Add(skill_name_to_num_points_var['GuardUp']>=3)
 model.Add(skill_name_to_num_points_var['Agitator']>=5)
 model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
@@ -301,7 +301,7 @@ model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
 model.Add(skill_name_to_num_points_var['Embolden']>=1)
 model.Add(skill_name_to_num_points_var['Guts']>=2)
 
-
+'''
 
 '''model.Add(id_to_arm_armor_var[armor_data['arm'].index(next(filter(lambda d: d['name'] == 'Pride Vambraces', armor_data['arm'])))]==True)
 model.Add(deco_name_to_dist_vars['GuardUp_2']['arm']==1)
