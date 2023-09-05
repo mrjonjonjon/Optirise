@@ -191,7 +191,7 @@ def get_solutions(shard_index,num_shards):
     switchaxe_data = json.loads(json_switchaxe_data)
     swordandshield_data = json.loads(json_swordandshield_data)
 
-    print('DATA PARSED')
+    #print('DATA PARSED')
 
     #IDK
     def h(a):
@@ -248,7 +248,7 @@ def get_solutions(shard_index,num_shards):
     #CREATE INTEGER SKILL VARS
     skill_name_to_num_points_var={}
     for skill_name in deco_data['maxLevel'].keys():
-        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'{skill_name}')
+        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,5*deco_data['maxLevel'][skill_name],f'{skill_name}')
 
     #CREATE INTEGER DECO DISTRIBUTION VARIABLES
     deco_name_to_dist_vars={}
@@ -467,18 +467,17 @@ def get_solutions(shard_index,num_shards):
 
 
     #=================SOLVING===========================================================================
-    print('ABOUT TO SOLVE')
     status = solver.Solve(model,solution_callback=solution_printer)
 
 
 
     #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
-    if status == cp_model.OPTIMAL:
-        print('\n' + "Optimal solution found!" + '\n')
-    elif status == cp_model.FEASIBLE:
-        print('\n' + "A solution found, but may not be optimal." + '\n')
-    else:
-        print('\n' + "No solution found!" + '\n')
+    #if status == cp_model.OPTIMAL:
+    #    print('\n' + "Optimal solution found!" + '\n')
+    #elif status == cp_model.FEASIBLE:
+    #    print('\n' + "A solution found, but may not be optimal." + '\n')
+    #else:
+    #    print('\n' + "No solution found!" + '\n')
 
 
 
@@ -500,6 +499,6 @@ def get_solutions(shard_index,num_shards):
 
 
     '''
-for i in range(7,8):
+'''for i in range(7,8):
     print('SHARD ',i)
-    get_solutions(i,8)
+    get_solutions(i,8)'''
