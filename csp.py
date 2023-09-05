@@ -465,7 +465,7 @@ status = solver.Solve(model,solution_callback=solution_printer)
 end_time = time.time()
 
 print(f"Function took {end_time-start_time:.2f} seconds to run.")
-
+#Function took 339.33 seconds to run.
 
 #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
 if status == cp_model.OPTIMAL:
