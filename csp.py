@@ -248,7 +248,7 @@ def get_solutions(shard_index,num_shards):
     #CREATE INTEGER SKILL VARS
     skill_name_to_num_points_var={}
     for skill_name in deco_data['maxLevel'].keys():
-        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,5*deco_data['maxLevel'][skill_name],f'{skill_name}')
+        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
 
     #CREATE INTEGER DECO DISTRIBUTION VARIABLES
     deco_name_to_dist_vars={}
@@ -281,11 +281,11 @@ def get_solutions(shard_index,num_shards):
 
 
     #ARMOR SKILL VARIABLES
-    head_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-    body_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-    arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-    waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
-    leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+    head_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'hh{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+    body_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'bb{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+    arm_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'aa{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+    waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
+    leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
 
     #==============CONSTRAINTS======================================================================
