@@ -2,6 +2,7 @@ from ortools.sat.python import cp_model
 import json
 from pprint import pprint
 import multiprocessing
+import time
 #OPENING/LOADING JSONS
 with open("json/armor.json", "r") as json_file:
     json_armor_data = json_file.read()
@@ -302,7 +303,7 @@ model.Add(skill_name_to_num_points_var['Embolden']>=1)
 model.Add(skill_name_to_num_points_var['Guts']>=2)
 
 model.Add(skill_name_to_num_points_var['Botanist']>=3)
-model.Add(skill_name_to_num_points_var['WindMantle']>=1)
+#model.Add(skill_name_to_num_points_var['WindMantle']>=1)
 #model.Add(skill_name_to_num_points_var['Earplugs']>=1)
 
 
@@ -459,8 +460,11 @@ solver.parameters.enumerate_all_solutions = True
 
 
 #=================SOLVING===========================================================================
+start_time = time.time()
 status = solver.Solve(model,solution_callback=solution_printer)
+end_time = time.time()
 
+print(f"Function took {end_time-start_time:.2f} seconds to run.")
 
 
 #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
