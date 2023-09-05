@@ -2,7 +2,7 @@ from csp import get_solutions
 
 
 import multiprocessing
-
+import time
 def main():
     n_processes = 8
     
@@ -21,5 +21,9 @@ def main():
         
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    end_time = time.time()
+
     print("DONE")
+    print(f"Function took {end_time - start_time:.2f} seconds to run.")
