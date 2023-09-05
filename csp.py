@@ -303,12 +303,28 @@ model.Add(skill_name_to_num_points_var['Guts']>=2)
 
 
 
-#model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
-#model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
-#model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
+'''model.Add(id_to_arm_armor_var[armor_data['arm'].index(next(filter(lambda d: d['name'] == 'Pride Vambraces', armor_data['arm'])))]==True)
+model.Add(deco_name_to_dist_vars['GuardUp_2']['arm']==1)
+model.Add(deco_name_to_dist_vars['Botanist_1']['arm']==1)
 
+model.Add(id_to_leg_armor_var[armor_data['leg'].index(next(filter(lambda d: d['name'] == 'Jyuratodus Greaves X', armor_data['leg'])))]==True)
+model.Add(deco_name_to_dist_vars['DragonResistance_4']['leg']==1)
+model.Add(deco_name_to_dist_vars['Bombardier_1']['leg']==2)
 
-
+model.Add(id_to_head_armor_var[armor_data['helm'].index(next(filter(lambda d: d['name'] == 'Risen Kushala Glare', armor_data['helm'])))]==True)
+model.Add(deco_name_to_dist_vars['WeaknessExploit_2']['helm']==1)
+model.Add(deco_name_to_dist_vars['Bombardier_1']['helm']==1)
+model.Add(deco_name_to_dist_vars['Botanist_1']['helm']==1)
+'''
+model.Add(id_to_body_armor_var[armor_data['chest'].index(next(filter(lambda d: d['name'] == 'Buff Chest', armor_data['chest'])))]==True)
+'''model.Add(deco_name_to_dist_vars['Botanist_1']['chest']==1)
+model.Add(deco_name_to_dist_vars['BladescaleHone_4']['chest']==1)
+'''
+model.Add(id_to_waist_armor_var[armor_data['waist'].index(next(filter(lambda d: d['name'] == 'Onmyo Ateobi', armor_data['waist'])))]==True)
+'''model.Add(deco_name_to_dist_vars['BladescaleHone_2']['waist']==1)
+model.Add(deco_name_to_dist_vars['WeaknessExploit_2']['waist']==1)
+model.Add(deco_name_to_dist_vars['AffinitySliding_1']['waist']==1)
+'''
 
 
 #NO DECOS ALLOWED
