@@ -237,17 +237,17 @@ id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(0,len(armor
 
 
 test_weapon_type_vars=[model.NewBoolVar(f'{i}_twtp') for i in range(14)]
-test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
+test_weapon_vars=[model.NewBoolVar(f'{i}_whichwpn') for i in range(400)]
 
 #CREATE INTEGER SKILL VARS
 skill_name_to_num_points_var={}
 for skill_name in deco_data['maxLevel'].keys():
-    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,deco_data['maxLevel'][skill_name],f'{skill_name}')
+    skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,5*deco_data['maxLevel'][skill_name],f'{skill_name}')#num points of each skill
 
 #CREATE INTEGER DECO DISTRIBUTION VARIABLES
 deco_name_to_dist_vars={}
 for level in range(4):
-    for pair in deco_data['decoLevels'][level]:
+    for pair in deco_data['decoLevels'][level]:#number of decos on each part
         name=list(pair.keys())[0]
         deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg','weapon']}
                     
@@ -290,7 +290,7 @@ model.Add(test_weapon_type_vars[3]==1)
 model.Add(test_weapon_vars[0]==1)
 
 #skill point constraints
-'''model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
+model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
 model.Add(skill_name_to_num_points_var['GuardUp']>=3)
 model.Add(skill_name_to_num_points_var['Agitator']>=5)
 model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
@@ -301,30 +301,13 @@ model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
 model.Add(skill_name_to_num_points_var['Embolden']>=1)
 model.Add(skill_name_to_num_points_var['Guts']>=2)
 
-'''
+model.Add(skill_name_to_num_points_var['Botanist']>=3)
+model.Add(skill_name_to_num_points_var['WindMantle']>=1)
+#model.Add(skill_name_to_num_points_var['Earplugs']>=1)
 
-'''model.Add(id_to_arm_armor_var[armor_data['arm'].index(next(filter(lambda d: d['name'] == 'Pride Vambraces', armor_data['arm'])))]==True)
-model.Add(deco_name_to_dist_vars['GuardUp_2']['arm']==1)
-model.Add(deco_name_to_dist_vars['Botanist_1']['arm']==1)
 
-model.Add(id_to_leg_armor_var[armor_data['leg'].index(next(filter(lambda d: d['name'] == 'Jyuratodus Greaves X', armor_data['leg'])))]==True)
-model.Add(deco_name_to_dist_vars['DragonResistance_4']['leg']==1)
-model.Add(deco_name_to_dist_vars['Bombardier_1']['leg']==2)
 
-model.Add(id_to_head_armor_var[armor_data['helm'].index(next(filter(lambda d: d['name'] == 'Risen Kushala Glare', armor_data['helm'])))]==True)
-model.Add(deco_name_to_dist_vars['WeaknessExploit_2']['helm']==1)
-model.Add(deco_name_to_dist_vars['Bombardier_1']['helm']==1)
-model.Add(deco_name_to_dist_vars['Botanist_1']['helm']==1)
-'''
-model.Add(id_to_body_armor_var[armor_data['chest'].index(next(filter(lambda d: d['name'] == 'Buff Chest', armor_data['chest'])))]==True)
-'''model.Add(deco_name_to_dist_vars['Botanist_1']['chest']==1)
-model.Add(deco_name_to_dist_vars['BladescaleHone_4']['chest']==1)
-'''
-model.Add(id_to_waist_armor_var[armor_data['waist'].index(next(filter(lambda d: d['name'] == 'Onmyo Ateobi', armor_data['waist'])))]==True)
-'''model.Add(deco_name_to_dist_vars['BladescaleHone_2']['waist']==1)
-model.Add(deco_name_to_dist_vars['WeaknessExploit_2']['waist']==1)
-model.Add(deco_name_to_dist_vars['AffinitySliding_1']['waist']==1)
-'''
+
 
 
 #NO DECOS ALLOWED
@@ -470,7 +453,7 @@ solver.parameters.num_workers=0
 
 solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                             head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
-                                            skill_name_to_num_points_var,\
+                                            0,\
                                             test_weapon_type_vars,test_weapon_vars])
 solver.parameters.enumerate_all_solutions = True
 
