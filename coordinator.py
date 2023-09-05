@@ -27,3 +27,8 @@ if __name__ == "__main__":
 
     print("DONE")
     print(f"Function took {end_time - start_time:.2f} seconds to run.")
+    #Function took 105.76 seconds to run.
+    #Function took 94.94 seconds to run.
+    #Function took 299.96 seconds to run.
+    #Function took 247.63 seconds to run.
+    #Function took 159.87 seconds to run.

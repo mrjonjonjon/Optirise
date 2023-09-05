@@ -456,7 +456,7 @@ def get_solutions(shard_index,num_shards):
 
     #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
     solver = cp_model.CpSolver()
-    solver.parameters.num_workers=0
+    solver.parameters.num_workers=1
 
 
     solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
