@@ -476,7 +476,7 @@ def get_solutions(shard_index,num_shards):
                                                 head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
                                                 skill_name_to_num_points_var,\
                                                 test_weapon_type_vars,test_weapon_vars,shard_index,armor_data])
-    #solver.parameters.enumerate_all_solutions = True
+    solver.parameters.enumerate_all_solutions = True
 
 
     #=================SOLVING===========================================================================
