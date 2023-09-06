@@ -9,6 +9,7 @@ def main():
     processes = []
 
     for index in range(n_processes):
+        get_solutions(index,n_processes)
         process = multiprocessing.Process(target=get_solutions, args=(index, n_processes))
         processes.append(process)
         process.start()

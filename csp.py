@@ -131,7 +131,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 
 def get_solutions(shard_index,num_shards):
-    print(f'process {shard_index} started')
+    #print(f'process {shard_index} started')
     #OPENING/LOADING JSONS
     with open("json/armor.json", "r") as json_file:
         json_armor_data = json_file.read()
@@ -469,19 +469,19 @@ def get_solutions(shard_index,num_shards):
     #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
     solver = cp_model.CpSolver()
  
-    solver.parameters.num_workers=1
+    solver.parameters.num_search_workers=16
 
     
     solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                                 head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
                                                 skill_name_to_num_points_var,\
                                                 test_weapon_type_vars,test_weapon_vars,shard_index,armor_data])
-    solver.parameters.enumerate_all_solutions = True
+    #solver.parameters.enumerate_all_solutions = True
 
 
     #=================SOLVING===========================================================================
     status = solver.Solve(model,solution_callback=solution_printer)
-    print(f'process {shard_index} ended')
+    #print(f'process {shard_index} ended')
 
 
 
