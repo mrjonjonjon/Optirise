@@ -4,10 +4,7 @@ from csp import get_solutions
 import multiprocessing
 import time
 def main():
-    n_processes = 8
-    
-    # Creating a shared list to store the result
-    result = multiprocessing.Array('i', n_processes)
+    n_processes = 2**5
     
     processes = []
 
@@ -15,6 +12,7 @@ def main():
         process = multiprocessing.Process(target=get_solutions, args=(index, n_processes))
         processes.append(process)
         process.start()
+        
     
     for process in processes:
         process.join()
@@ -33,6 +31,7 @@ if __name__ == "__main__":
     #Function took 247.63 seconds to run.
     #Function took 159.87 seconds to run.
     #Function took 161.02 seconds to run.
+    #60,70,75
 
 
     #======SHUFFLING========

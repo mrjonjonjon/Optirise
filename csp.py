@@ -122,7 +122,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         
 
         print(f"SHARD {shard_index},,,{solution}::::Solution found\n")
-    print()
+    #print()
     
 
     def solution_count(self):
@@ -131,6 +131,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 
 def get_solutions(shard_index,num_shards):
+    print(f'process {shard_index} started')
     #OPENING/LOADING JSONS
     with open("json/armor.json", "r") as json_file:
         json_armor_data = json_file.read()
@@ -248,8 +249,8 @@ def get_solutions(shard_index,num_shards):
     id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in sharded_range_for(shard_index,'helm',len(armor_data['helm'])) }
     id_to_body_armor_var = {id:model.NewBoolVar(f'c{id}') for id in sharded_range_for(shard_index,'chest',len(armor_data['chest'])) }
     id_to_arm_armor_var = {id:model.NewBoolVar(f'a{id}') for id in sharded_range_for(shard_index,'arm',len(armor_data['arm'])) }
-    id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in range(len(armor_data['waist'])) }
-    id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in range(len(armor_data['leg'])) }
+    id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in sharded_range_for(shard_index,'waist',len(armor_data['waist'])) }
+    id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in sharded_range_for(shard_index,'leg',len(armor_data['leg'])) }
 
 
 
@@ -409,7 +410,7 @@ def get_solutions(shard_index,num_shards):
         for i in range(4):
             model.Add(arm_deco_slots_vars[i]==armor_data['arm'][id]['decos'][i]).OnlyEnforceIf(id_to_arm_armor_var[id])
 
-    for id in range(len(armor_data['waist'])):
+    for id in sharded_range_for(shard_index,'waist',len(armor_data['waist'])):
         #model.Add(waist_armor_def_var == armor_data['waist'][id]['def']).OnlyEnforceIf(id_to_waist_armor_var[id])
         for skill_name in deco_data['maxLevel'].keys():
             if skill_name in armor_data['waist'][id]['skills'].keys():
@@ -419,7 +420,7 @@ def get_solutions(shard_index,num_shards):
         for i in range(4):
             model.Add(waist_deco_slots_vars[i]==armor_data['waist'][id]['decos'][i]).OnlyEnforceIf(id_to_waist_armor_var[id])
 
-    for id in range(len(armor_data['leg'])):
+    for id in sharded_range_for(shard_index,'leg',len(armor_data['leg'])):
         #model.Add(leg_armor_def_var == armor_data['leg'][id]['def']).OnlyEnforceIf(id_to_leg_armor_var[id])
         for skill_name in deco_data['maxLevel'].keys():
             if skill_name in armor_data['leg'][id]['skills'].keys():
@@ -470,16 +471,17 @@ def get_solutions(shard_index,num_shards):
  
     solver.parameters.num_workers=1
 
-
+    
     solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                                 head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
                                                 skill_name_to_num_points_var,\
                                                 test_weapon_type_vars,test_weapon_vars,shard_index,armor_data])
-    solver.parameters.enumerate_all_solutions = True
+    #solver.parameters.enumerate_all_solutions = True
 
 
     #=================SOLVING===========================================================================
     status = solver.Solve(model,solution_callback=solution_printer)
+    print(f'process {shard_index} ended')
 
 
 
