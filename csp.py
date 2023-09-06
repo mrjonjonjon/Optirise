@@ -449,14 +449,15 @@ for skill_name in deco_data['maxLevel'].keys():
 
 #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
 solver = cp_model.CpSolver()
-solver.parameters.num_workers=1
+#solver.parameters.num_workers=0
+solver.parameters.num_search_workers=32
 
 
 solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                             head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
                                             0,\
                                             test_weapon_type_vars,test_weapon_vars])
-solver.parameters.enumerate_all_solutions = True
+#solver.parameters.enumerate_all_solutions = True
 
 
 #=================SOLVING===========================================================================
@@ -470,8 +471,10 @@ print(f"Function took {end_time-start_time:.2f} seconds to run.")
 #Function took 127.72 seconds to run.
 #Function took 196.75 seconds to run.
 #Function took 164.36 seconds to run.
+#Function took 191.53 seconds to run.
 #-----single core ---------
 #Function took 213.27 seconds to run.
+#Function took 229.37 seconds to run.
 #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
 if status == cp_model.OPTIMAL:
     print('\n' + "Optimal solution found!" + '\n')
