@@ -4,7 +4,7 @@ from csp import get_solutions
 import multiprocessing
 import time
 def main():
-    n_processes = 2**5
+    n_processes = 4**5
     
     processes = []
 

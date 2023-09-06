@@ -35,6 +35,28 @@ def extract_number(s):
         return None
 
 
+def to_base_4(n):
+    """Convert a number to base 4."""
+    if n == 0:
+        return '0'
+    digits = []
+    while n:
+        digits.append(str(n % 4))
+        n //= 4
+    # Return the number in base 4 as a string
+    return ''.join(digits[::-1])
+
+def ith_digit_base_4(n, i):
+    """Convert a number to base 4 and get the ith digit."""
+    base_4_str = to_base_4(n)
+    if i < 0 or i >= len(base_4_str):
+        return None
+    return int(base_4_str[i])
+
+
+
+
+
 def write_list_to_json(lst,filename):
     import json
     with open(filename, 'w') as file:
@@ -50,9 +72,14 @@ def read_json_list(filename):
 #assumes 2**5 shards
 def sharded_range_for(shard_index,part,len_lst):
     idx = ['helm','chest','arm','waist','leg'].index(part)
+    b4_string=to_base_4(idx)
     shard_index>>=idx
-    b= shard_index&1
-    return sharded_range(b,2,len_lst)
+    b=-1
+    if abs(-1-idx)>len(b4_string):
+        b=0
+    else:
+        b= int(b4_string[-1-idx])
+    return sharded_range(b,4,len_lst)
 
 
 
