@@ -332,6 +332,8 @@ def get_solutions(shard_index,num_shards):
 
         model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['weapon'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(weapon_deco_slots_vars[u_level] for u_level in range(level,4)))
 
+
+
     #====INTERMEDIATE CONSTRAINTS======
     #MAPPING VARIABLES TO JSON ARMOR DATA
     for id in sharded_range_for(shard_index,'helm',len(armor_data['helm'])):
@@ -443,12 +445,12 @@ def get_solutions(shard_index,num_shards):
 
 
     #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
-    if status == cp_model.OPTIMAL:
-        print('\n' + "Optimal solution found!" + '\n')
-    elif status == cp_model.FEASIBLE:
-        print('\n' + "A solution found, but may not be optimal." + '\n')
-    else:
-        print('\n' + "No solution found!" + '\n')
+    #if status == cp_model.OPTIMAL:
+    #    print('\n' + "Optimal solution found!" + '\n')
+    #elif status == cp_model.FEASIBLE:
+    #    print('\n' + "A solution found, but may not be optimal." + '\n')
+    #else:
+    #    print('\n' + "No solution found!" + '\n')
 
 
 
