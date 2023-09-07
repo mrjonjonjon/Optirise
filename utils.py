@@ -26,6 +26,7 @@ def generate_intervals(nums):
 from collections import defaultdict
 
 import re
+from heapq import heappop,heappush,heapify
 
 def extract_number(s):
     match = re.search(r'(\d+)', s)
@@ -78,27 +79,27 @@ def sharded_range_for(shard_index,part,len_lst):
 
 
 def distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_armor_id,selected_arm_armor_id,selected_waist_armor_id,selected_leg_armor_id,armor_data,deco_data):
-    deco_levels=defaultdict(list)
+    deco_levels=[]
     final_dist=defaultdict(list)
     for deco_name in selected_deco_names:
         name,level=deco_name.split('_')
-        deco_levels[int(level)].append(name)
+        level=int(level)
+        heappush(deco_levels,(-level,name,level))
 
-    armor_levels=defaultdict(list)
+    armor_levels=[]
     for part in ['helm','body','arm','waist','leg']:
-        for slot_level,num in enumerate(eval(f'armor_data[{part}][selected_{part}_armor_id]')):
+        for slot_level,num in enumerate(eval(f'armor_data[part if part!="body" else "chest"][selected_{part}_armor_id]["decos"]')):
+            slot_level+=1
             for i in range(num):
-                armor_levels[slot_level+1].append(part)
+                heappush(armor_levels,(-slot_level,part,slot_level))
 
-    for deco_level in range(4,0,-1):
-        for deco_name in deco_levels[deco_level]:
-            if len(armor_levels[deco_level])>0:
-                part_to_use=armor_levels[deco_level][-1]
-                armor_levels[deco_level].pop()
+    while deco_levels:
+        _,deco_name,deco_level = heappop(deco_levels)
+        if not armor_levels:return 'IMPOSSIBLE'
+        _,part,slot_level = heappop(armor_levels)
+        if slot_level<deco_level:return 'IMPOSSIBLE'
 
-                final_dist[part_to_use].append(deco_name)
-            else:
-                return 'IMPOSSIBLE'
+        final_dist[part].append(f'{deco_name}_{deco_level}')
     return final_dist
 
 def sharded_range(shard_index,num_shards,len_lst):
