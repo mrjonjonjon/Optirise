@@ -253,10 +253,6 @@ def get_solutions(shard_index,num_shards):
                   
 
     #====INTERMEDIATE VARIABLES=======
-    #CREATE INTEGER SKILL VARS
-    skill_name_to_num_points_var={}
-    for skill_name in deco_data['maxLevel'].keys():
-        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
 
     #ARMOR DECO SLOT VARIABLES
     head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
@@ -264,7 +260,6 @@ def get_solutions(shard_index,num_shards):
     arm_deco_slots_vars = [model.NewIntVar(0,3,f'adeco{i}') for i in range(4)]
     waist_deco_slots_vars = [model.NewIntVar(0,3,f'wdeco{i}') for i in range(4)]
     leg_deco_slots_vars = [model.NewIntVar(0,3,f'ldeco{i}') for i in range(4)]
-
 
     #WEAPON DECO SLOT VARIABLES
     weapon_deco_slots_vars = [model.NewIntVar(0,3,f'wpndeco{i}') for i in range(4)]
@@ -277,6 +272,10 @@ def get_solutions(shard_index,num_shards):
     waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
     leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
+    #CREATE INTEGER SKILL VARS
+    skill_name_to_num_points_var={}
+    for skill_name in deco_data['maxLevel'].keys():
+        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
 
     #==============CONSTRAINTS======================================================================
 
