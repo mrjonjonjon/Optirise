@@ -1,16 +1,15 @@
 from ortools.sat.python import cp_model
 import json
-from pprint import pprint
-import multiprocessing
 import random
-from utils import sharded_range,sharded_range_for,distribute_decos,my_pretty_print
+from utils import sharded_range_for,distribute_decos,my_pretty_print
+
+
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     def __init__(self, variables,max_solutions=1):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__variables = variables
         self.__solution_count = 0
         self.__max_solutions = max_solutions
-
         self.printed_solution_count=0
         self.armor_sets_decos=set()
 
@@ -30,6 +29,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         id_to_weapon_var = self.__variables['id_to_weapon_var']
         id_to_weapon_type = self.__variables['id_to_weapon_type']
         weapon_data=self.__variables['weapon_data']
+        affinity_var = self.__variables['affinity']
 
 
         selected_body_armor_id = None
@@ -110,6 +110,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         solution = {
             'weapon':weapon_data[id_to_weapon_type[selected_weapon_type_id]]['weapons'][selected_weapon_id]['weapon'],
             'weapon_decos':deco_dist['weapon'],
+            'affinity':self.Value(affinity_var),
             'helm':armor_data['helm'][selected_helm_armor_id]['name'],
             'helm_decos':deco_dist['helm'],
             'chest':armor_data['chest'][selected_body_armor_id]['name'],
@@ -120,6 +121,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
             'waist_decos':deco_dist['waist'],
             'leg':armor_data['leg'][selected_leg_armor_id]['name'],
             'leg_decos':deco_dist['leg'],
+
         
         }        
         my_pretty_print(solution)
@@ -128,8 +130,6 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         if self.__solution_count >= self.__max_solutions:
             print(f"Stopped search after {self.__max_solutions} solutions")
             self.StopSearch()
-
-
 
 
     def solution_count(self):
@@ -255,6 +255,9 @@ def get_solutions(shard_index,num_shards):
 
     #====INTERMEDIATE VARIABLES=======
 
+
+    #AFFINITY
+    affinity_var = model.NewIntVar(-100,100,'affinity')
     #ARMOR DECO SLOT VARIABLES
     head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
     body_deco_slots_vars = [model.NewIntVar(0,3,f'bdeco{i}') for i in range(4)]
@@ -287,7 +290,7 @@ def get_solutions(shard_index,num_shards):
     #model.Add(weapon_type_vars[0]==1)
 
     #skill point constraints
-    model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
+    '''model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
     model.Add(skill_name_to_num_points_var['GuardUp']>=3)
     model.Add(skill_name_to_num_points_var['Agitator']>=5)
     model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
@@ -298,7 +301,9 @@ def get_solutions(shard_index,num_shards):
     model.Add(skill_name_to_num_points_var['Embolden']>=1)
     model.Add(skill_name_to_num_points_var['Guts']>=2)
     model.Add(skill_name_to_num_points_var['Botanist']>=3)
-    model.Add(skill_name_to_num_points_var['Earplugs']>=1)
+    model.Add(skill_name_to_num_points_var['Earplugs']>=1)'''
+
+    model.Add(affinity_var==100)
 
 
 
@@ -402,12 +407,12 @@ def get_solutions(shard_index,num_shards):
 
 
 
-    #make extra weapon variables zero
+    #make extra weapon variables zero. DO NOT REMOVE
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         numwep = len(eval(f"{weapon_type}_data['weapons']"))
         for x in range(numwep,len(id_to_weapon_var)):
             model.Add((id_to_weapon_var[x])==0).OnlyEnforceIf(weapon_type_vars[weapon_type_id])
-
+    #ENFORCE WEAPON DECO SLOTS
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
 
@@ -416,7 +421,8 @@ def get_solutions(shard_index,num_shards):
 
             for i in range(4):
                 model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
-
+            #ENFORCE AFFINITY
+            model.Add(affinity_var == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['aff']")).OnlyEnforceIf([b,c])
 
 
 
@@ -449,14 +455,15 @@ def get_solutions(shard_index,num_shards):
     'id_to_weapon_var':id_to_weapon_var,
     'weapon_type_vars':weapon_type_vars,
     'id_to_weapon_type':id_to_weapon_type,
-    'weapon_type_vars':weapon_type_vars
+    'weapon_type_vars':weapon_type_vars,
+    'affinity':affinity_var
     }
     solution_printer = VarArraySolutionPrinter(solution_printer_arg)
 
     #=================SOLVING===========================================================================
 
 
-    solver.parameters.enumerate_all_solutions = True
+    #solver.parameters.enumerate_all_solutions = True
 
     status = solver.Solve(model,solution_callback=solution_printer)
     #print(f'process {shard_index} ended')
