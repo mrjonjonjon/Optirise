@@ -23,7 +23,7 @@ def generate_intervals(nums):
     intervals.append((start, end))
 
     return intervals
-
+from collections import defaultdict
 
 import re
 
@@ -78,11 +78,28 @@ def sharded_range_for(shard_index,part,len_lst):
 
 
 def distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_armor_id,selected_arm_armor_id,selected_waist_armor_id,selected_leg_armor_id,armor_data,deco_data):
-    deco_levels={}
+    deco_levels=defaultdict(list)
+    final_dist=defaultdict(list)
     for deco_name in selected_deco_names:
         name,level=deco_name.split('_')
-        deco_levels[int(level)].append(deco_name)
+        deco_levels[int(level)].append(name)
 
+    armor_levels=defaultdict(list)
+    for part in ['helm','body','arm','waist','leg']:
+        for slot_level,num in enumerate(eval(f'armor_data[{part}][selected_{part}_armor_id]')):
+            for i in range(num):
+                armor_levels[slot_level+1].append(part)
+
+    for deco_level in range(4,0,-1):
+        for deco_name in deco_levels[deco_level]:
+            if len(armor_levels[deco_level])>0:
+                part_to_use=armor_levels[deco_level][-1]
+                armor_levels[deco_level].pop()
+
+                final_dist[part_to_use].append(deco_name)
+            else:
+                return 'IMPOSSIBLE'
+    return final_dist
 
 def sharded_range(shard_index,num_shards,len_lst):
     return range(shard_index  *  len_lst//num_shards,\
