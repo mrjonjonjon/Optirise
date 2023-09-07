@@ -412,6 +412,8 @@ def get_solutions(shard_index,num_shards):
                 model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
 
 
+
+
     #ENFORCING 'skill_name_to_num_points_var' RELATIONSHIP
     for skill_name in deco_data['maxLevel'].keys():
         model.Add(                                        \
@@ -425,23 +427,35 @@ def get_solutions(shard_index,num_shards):
 
 
 
+    #symettry breaking
+    '''    all_parts=['helm','chest','arm','waist','leg']
+        for i in range(len((['helm','chest','arm','waist','leg']))):
+            for j in range(j+1,len((['helm','chest','arm','waist','leg']))):
+                for deco in deco_name_to_dist_vars[f'{name}_{level+1}'][all]
+
+    '''
+    waste=[]
+    for i in range(1):waste.append(model.NewIntVar(0,1000,f'_ndojndoijdn{i}'))
+
     #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
     solver = cp_model.CpSolver()
  
-    solver.parameters.num_search_workers=4
+    solver.parameters.num_search_workers=1
 
     
     solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,deco_name_to_dist_vars,\
                                                 head_skill_name_to_points_var,body_skill_name_to_points_var, arm_skill_name_to_points_var,waist_skill_name_to_points_var,leg_skill_name_to_points_var,\
                                                 skill_name_to_num_points_var,\
                                                 test_weapon_type_vars,test_weapon_vars,shard_index,armor_data])
-    #solver.parameters.enumerate_all_solutions = True
 
 
     #=================SOLVING===========================================================================
+
+
+    solver.parameters.enumerate_all_solutions = True
+
     status = solver.Solve(model,solution_callback=solution_printer)
     #print(f'process {shard_index} ended')
-
 
 
     #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================

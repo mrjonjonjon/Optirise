@@ -1,4 +1,4 @@
-from csp import get_solutions
+from csp2 import get_solutions
 
 
 import multiprocessing

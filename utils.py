@@ -77,6 +77,11 @@ def sharded_range_for(shard_index,part,len_lst):
     return sharded_range(b,2,len_lst)
 
 
+def distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_armor_id,selected_arm_armor_id,selected_waist_armor_id,selected_leg_armor_id,armor_data,deco_data):
+    deco_levels={}
+    for deco_name in selected_deco_names:
+        name,level=deco_name.split('_')
+        deco_levels[int(level)].append(deco_name)
 
 
 def sharded_range(shard_index,num_shards,len_lst):
