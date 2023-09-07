@@ -16,14 +16,19 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.__solution_count += 1
     
         #if self.__solution_count>100:self.StopSearch()
-        id_to_head_armor_var=self.__variables[0]
-        id_to_body_armor_var=self.__variables[1]
-        id_to_arm_armor_var=self.__variables[2]
-        id_to_waist_armor_var=self.__variables[3]
-        id_to_leg_armor_var=self.__variables[4]
-        armor_data=self.__variables[5]
-        deco_name_dist_vars=self.__variables[6]
-        deco_data=self.__variables[7]
+        id_to_head_armor_var=self.__variables['id_to_head_armor_var']
+        id_to_body_armor_var=self.__variables['id_to_body_armor_var']
+        id_to_arm_armor_var=self.__variables['id_to_arm_armor_var']
+        id_to_waist_armor_var=self.__variables['id_to_waist_armor_var']
+        id_to_leg_armor_var=self.__variables['id_to_leg_armor_var']
+        armor_data=self.__variables['armor_data']
+        deco_name_dist_vars=self.__variables['deco_name_to_dist_vars']
+        deco_data=self.__variables['deco_data']
+        weapon_type_vars = self.__variables['weapon_type_vars']
+        id_to_weapon_var = self.__variables['id_to_weapon_var']
+        id_to_weapon_type = self.__variables['id_to_weapon_type']
+        weapon_data=self.__variables['weapon_data']
+
 
         selected_body_armor_id = None
         selected_arm_armor_id = None
@@ -58,13 +63,35 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
             if self.BooleanValue(var):
                 selected_leg_armor_id = id
                 break
-        
+
+        for id,var in weapon_type_vars.items():
+            if self.BooleanValue(var):
+                selected_weapon_type_id= id
+                break
+
+        for id,var in id_to_weapon_var.items():
+            if self.BooleanValue(var):
+                selected_weapon_id= id
+                break
+
+
         selected_deco_names=[]
         for name,var in deco_name_dist_vars.items():
-            for i in range((self.Value(var))):
+            for _ in range((self.Value(var))):
                 selected_deco_names.append(name)
 
-        deco_dist=distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_armor_id,selected_arm_armor_id,selected_waist_armor_id,selected_leg_armor_id,armor_data,deco_data)
+        deco_dist=distribute_decos(selected_deco_names=selected_deco_names,\
+                                   selected_helm_armor_id=selected_helm_armor_id,\
+                                    selected_body_armor_id=selected_body_armor_id,\
+                                    selected_arm_armor_id=selected_arm_armor_id,\
+                                    selected_waist_armor_id=selected_waist_armor_id,\
+                                    selected_leg_armor_id=selected_leg_armor_id,\
+                                    armor_data=armor_data,\
+                                    deco_data=deco_data,
+                                    selected_weapon_type_id=selected_weapon_type_id,
+                                    selected_weapon_id= selected_weapon_id,
+                                    weapon_data=weapon_data,
+                                    id_to_weapon_type=id_to_weapon_type)
 
         helm_name=armor_data['helm'][selected_helm_armor_id]['name']
         chest_name=armor_data['chest'][selected_body_armor_id]['name']
@@ -72,13 +99,15 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         waist_name=armor_data['waist'][selected_waist_armor_id]['name']
         leg_name=armor_data['leg'][selected_leg_armor_id]['name']
 
-        if (helm_name,chest_name,arm_name,waist_name,leg_name) in self.armor_sets_decos:return
+        #if (helm_name,chest_name,arm_name,waist_name,leg_name) in self.armor_sets_decos:return
 
         self.printed_solution_count+=1
        # weapon_type = id_to_weapon_type[selected_weapon_type_id]
         #weapon_name = eval(f'{weapon_type}_data["weapons"][{selected_weapon_id}]["weapon"]')
 
         solution = {
+            'weapon':weapon_data[id_to_weapon_type[selected_weapon_type_id]][selected_weapon_id]['weapon'],
+            'weapon_decos':deco_dist['weapon'],
             'helm':armor_data['helm'][selected_helm_armor_id]['name'],
             'helm_decos':deco_dist['helm'],
             'chest':armor_data['chest'][selected_body_armor_id]['name'],
@@ -138,18 +167,6 @@ def get_solutions(shard_index,num_shards):
     with open("json/SwordNShield.json", "r") as json_file:
         json_swordandshield_data = json_file.read()
 
-
-
-
-    armor_data = json.loads(json_armor_data)
-    deco_data = json.loads(json_deco_data)
-
-
-    random.seed(8)
-    for k in armor_data.keys():
-        #armor_data[k] = armor_data[k][40:]
-        random.shuffle(armor_data[k])
-
     bow_data = json.loads(json_bow_data)
     chargeblade_data = json.loads(json_chargeblade_data)
     dualblades_data = json.loads(json_dualblades_data)
@@ -164,8 +181,6 @@ def get_solutions(shard_index,num_shards):
     longsword_data = json.loads(json_longsword_data)
     switchaxe_data = json.loads(json_switchaxe_data)
     swordandshield_data = json.loads(json_swordandshield_data)
-
-    #print('DATA PARSED')
 
     id_to_weapon_type = {
         0: 'bow',
@@ -183,8 +198,22 @@ def get_solutions(shard_index,num_shards):
         12: 'heavybowgun',
         13: 'swordandshield'
     }
+    armor_data = json.loads(json_armor_data)
+    deco_data = json.loads(json_deco_data)
+    weapon_data={}
+    for weapon_type in id_to_weapon_type.values():
+        weapon_data[weapon_type]=eval(f'{weapon_type}_data')
+
+
+    random.seed(8)
+    for k in armor_data.keys():
+        random.shuffle(armor_data[k])
+
 
     #NON-VAR DATA
+
+
+
     deco_name_to_points={}
     for level in range(4):
         for i in range(len(deco_data['decoLevels'][level])):
@@ -206,8 +235,8 @@ def get_solutions(shard_index,num_shards):
     id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in sharded_range_for(shard_index,'leg',len(armor_data['leg'])) }
 
     #WHICH WEAPON
-    test_weapon_type_vars=[model.NewBoolVar(f'{i}_twtp') for i in range(14)]
-    test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
+    weapon_type_vars={i:model.NewBoolVar(f'{i}_twtp') for i in range(14)}
+    id_to_weapon_var={i:model.NewBoolVar(f'{i}_whichwpn') for i in range(400)}
 
 
     #DECO DISTRIBUTION VARIABLES
@@ -238,6 +267,7 @@ def get_solutions(shard_index,num_shards):
     waist_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'www{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
     leg_skill_name_to_points_var={skill_name:model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'll{skill_name}') for skill_name in deco_data['maxLevel'].keys()}
 
+    
     #CREATE INTEGER SKILL VARS
     skill_name_to_num_points_var={}
     for skill_name in deco_data['maxLevel'].keys():
@@ -247,8 +277,7 @@ def get_solutions(shard_index,num_shards):
 
     #OBJECTIVES/OPTIONAL CONSTRAINTS
     #fix weapon
-    model.Add(test_weapon_type_vars[3]==1)
-    model.Add(test_weapon_vars[0]==1)
+
 
     #skill point constraints
     model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
@@ -286,8 +315,8 @@ def get_solutions(shard_index,num_shards):
     model.Add(sum(id_to_leg_armor_var.values()) == 1)
 
     #CAN HAVE AT MOST ONE WEAPON
-    model.Add(sum(test_weapon_vars)==1)
-    model.Add(sum(test_weapon_type_vars)==1)
+    model.Add(sum(id_to_weapon_var)==1)
+    model.Add(sum(weapon_type_vars)==1)
 
     #DECOS CANT EXCEED SLOTS
     for level in range(4):  
@@ -296,7 +325,8 @@ def get_solutions(shard_index,num_shards):
                   sum(body_deco_slots_vars[u_level] for u_level in range(level,4))+\
                   sum(arm_deco_slots_vars[u_level] for u_level in range(level,4))+\
                   sum(waist_deco_slots_vars[u_level] for u_level in range(level,4))+\
-                  sum(leg_deco_slots_vars[u_level] for u_level in range(level,4)))
+                  sum(leg_deco_slots_vars[u_level] for u_level in range(level,4))+
+                  sum(weapon_deco_slots_vars[u_level] for u_level in range(level,4)))
 
 
     #====INTERMEDIATE CONSTRAINTS======
@@ -365,13 +395,14 @@ def get_solutions(shard_index,num_shards):
     #make extra weapon variables zero
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         numwep = len(eval(f"{weapon_type}_data['weapons']"))
-        model.Add(sum(test_weapon_vars[numwep:])==0).OnlyEnforceIf(test_weapon_type_vars[weapon_type_id])
+        for x in range(numwep,len(id_to_weapon_var)):
+            model.Add((id_to_weapon_var[x])==0).OnlyEnforceIf(weapon_type_vars[weapon_type_id])
 
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
 
-            b = test_weapon_type_vars[weapon_type_id]
-            c = test_weapon_vars[weapon_id]
+            b = weapon_type_vars[weapon_type_id]
+            c = id_to_weapon_var[weapon_id]
 
             for i in range(4):
                 model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
@@ -395,9 +426,22 @@ def get_solutions(shard_index,num_shards):
     solver = cp_model.CpSolver()
  
     solver.parameters.num_search_workers=1
-    
-    solution_printer = VarArraySolutionPrinter([id_to_head_armor_var,id_to_body_armor_var,id_to_arm_armor_var,id_to_waist_armor_var,id_to_leg_armor_var,armor_data,\
-                                                deco_name_to_dist_vars,deco_data])
+    solution_printer_arg={
+    "id_to_head_armor_var": id_to_head_armor_var,
+    "id_to_body_armor_var": id_to_body_armor_var,
+    "id_to_arm_armor_var": id_to_arm_armor_var,
+    "id_to_waist_armor_var": id_to_waist_armor_var,
+    "id_to_leg_armor_var": id_to_leg_armor_var,
+    "armor_data": armor_data,
+    "deco_name_to_dist_vars": deco_name_to_dist_vars,
+    "deco_data": deco_data,
+    'weapon_data':weapon_data,
+    'id_to_weapon_var':id_to_weapon_var,
+    'weapon_type_vars':weapon_type_vars,
+    'id_to_weapon_type':id_to_weapon_type,
+    'weapon_type_vars':weapon_type_vars
+    }
+    solution_printer = VarArraySolutionPrinter(solution_printer_arg)
 
     #=================SOLVING===========================================================================
 
@@ -433,88 +477,4 @@ def get_solutions(shard_index,num_shards):
     You cannot inside the solver. You need to parallelize it yourself.
     model.AddDecisionStrategy(
             task_starts, cp_model.CHOOSE_LOWEST_MIN, cp_model.SELECT_MIN_VALUE)
-
-
     '''
-'''for i in range(7,8):
-    print('SHARD ',i)
-    get_solutions(i,8)'''
-
-
-'''{'helm': 'Risen Kushala Glare',
-  'chest': 'Buff Chest',
-    'arm': 'Onmyo Tekkou', 
-    'waist': 'Buff Waist',
-      'leg': 'Jyuratodus Greaves X', 
-{'body': ['Bombardier_4', 'AffinitySliding_1'],
-  'leg': ['Botanist_4', 'DragonResistance_1', 'DragonResistance_1'],
-    'helm': ['BladescaleHone_2', 'WeaknessExploit_2', 'DragonResistance_1'],
-
-      'waist': ['BladescaleHone_2', 'WeaknessExploit_2'],
-        'arm': ['BladescaleHone_2', 'GuardUp_2', 'WeaknessExploit_2']})}
-
-
-{'helm': 'Risen Kushala Glare', 
- 'chest': 'Buff Chest',
-   'arm': 'Onmyo Tekkou', 
-   'waist': 'Buff Waist',
-     'leg': 'Jyuratodus Greaves X', 
-
-{'body': ['Botanist_4', 'AffinitySliding_1'],
-  'leg': ['DragonResistance_4', 'Bombardier_1', 'Bombardier_1'], 
-  'helm': ['BladescaleHone_2', 'WeaknessExploit_2', 'Bombardier_1'], 
-
-  'waist': ['BladescaleHone_2', 'WeaknessExploit_2'], 
-  'arm': ['BladescaleHone_2', 'GuardUp_2', 'WeaknessExploit_2']})}
-
-{'helm': 'Risen Kushala Glare',
-  'chest': 'Buff Chest', 
-  'arm': 'Onmyo Tekkou', 
-  'waist': 'Buff Waist', 
-  'leg': 'Jyuratodus Greaves X', 
-  
- {'body': ['Bombardier_4', 'AffinitySliding_1'],
-   'leg': ['DragonResistance_4', 'Botanist_1', 'Botanist_1'],
-     'helm': ['BladescaleHone_2', 'WeaknessExploit_2', 'Botanist_1'], 
-     'waist': ['BladescaleHone_2', 'WeaknessExploit_2'],
-       'arm': ['BladescaleHone_2', 'GuardUp_2', 'WeaknessExploit_2']})}'''
-
-
-
-
-'''FOUND SOLUTION
-{'helm': 'Risen Kushala Glare', 
- 'chest': 'Buff Chest', 
- 'arm': 'Pride Vambraces',
-   'waist': 'Onmyo Ateobi', 
-   'leg': 'Jyuratodus Greaves X',
-
-  {'body': ['BladescaleHone_4', 'Botanist_1'], 
-   'leg': ['Bombardier_4', 'DragonResistance_1', 'DragonResistance_1'],
-     'arm': ['BladescaleHone_2', 'Botanist_1'], 
-     'helm': ['GuardUp_2', 'WeaknessExploit_2', 'Botanist_1'],
-       'waist': ['WeaknessExploit_2', 'AffinitySliding_1', 'DragonResistance_1']})}
-FOUND SOLUTION
-{'helm': 'Risen Kushala Glare',
-  'chest': 'Buff Chest',
-    'arm': 'Pride Vambraces',
-      'waist': 'Onmyo Ateobi', 
-      'leg': 'Jyuratodus Greaves X',
-{'body': ['BladescaleHone_4', 'Bombardier_1'], 
- 'leg': ['DragonResistance_4', 'Botanist_1', 'Botanist_1'], 
- 'arm': ['BladescaleHone_2', 'Bombardier_1'], 
- 'helm': ['GuardUp_2', 'WeaknessExploit_2', 'Bombardier_1'], 
- 'waist': ['WeaknessExploit_2', 'AffinitySliding_1', 'Botanist_1']})}
-
-FOUND SOLUTION
-{'helm': 'Risen Kushala Glare',
-  'chest': 'Buff Chest', 
-  'arm': 'Pride Vambraces', 
-  'waist': 'Onmyo Ateobi',
-    'leg': 'Jyuratodus Greaves X',
-  {'body': ['BladescaleHone_4', 'Bombardier_1']
-  , 'leg': ['Botanist_4', 'DragonResistance_1', 'DragonResistance_1'],
-    'arm': ['BladescaleHone_2', 'Bombardier_1'], 
-    'helm': ['GuardUp_2', 'WeaknessExploit_2', 'Bombardier_1'], 
-    'waist': ['WeaknessExploit_2', 'AffinitySliding_1', 'DragonResistance_1']})}
-DONE'''

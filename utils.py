@@ -78,7 +78,18 @@ def sharded_range_for(shard_index,part,len_lst):
     return sharded_range(b,2,len_lst)
 
 
-def distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_armor_id,selected_arm_armor_id,selected_waist_armor_id,selected_leg_armor_id,armor_data,deco_data):
+def distribute_decos(selected_deco_names,\
+                                   selected_helm_armor_id,\
+                                    selected_body_armor_id,\
+                                    selected_arm_armor_id,\
+                                    selected_waist_armor_id,\
+                                    selected_leg_armor_id,\
+                                    armor_data,\
+                                    deco_data,
+                                    selected_weapon_type_id,
+                                    selected_weapon_id,
+                                    weapon_data,
+                                    id_to_weapon_type):
     deco_levels=[]
     final_dist=defaultdict(list)
     for deco_name in selected_deco_names:
@@ -92,6 +103,12 @@ def distribute_decos(selected_deco_names,selected_helm_armor_id,selected_body_ar
             slot_level+=1
             for i in range(num):
                 heappush(armor_levels,(-slot_level,part,slot_level))
+
+    for slot_level,num in weapon_data[(id_to_weapon_type[selected_weapon_type_id])][selected_weapon_id]['decos']:
+        slot_level+=1
+        for i in range(num):
+                heappush(armor_levels,(-slot_level,'weapon',slot_level))
+
 
     while deco_levels:
         _,deco_name,deco_level = heappop(deco_levels)
