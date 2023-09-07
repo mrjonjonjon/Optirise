@@ -3,7 +3,7 @@ import json
 from pprint import pprint
 import multiprocessing
 import random
-from utils import sharded_range,sharded_range_for,distribute_decos
+from utils import sharded_range,sharded_range_for,distribute_decos,my_pretty_print
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     def __init__(self, variables):
         cp_model.CpSolverSolutionCallback.__init__(self)
@@ -13,7 +13,6 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.armor_sets_decos=set()
 
     def on_solution_callback(self):
-        print("FOUND SOLUTION")
         self.__solution_count += 1
     
         #if self.__solution_count>100:self.StopSearch()
@@ -81,17 +80,22 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
         solution = {
             'helm':armor_data['helm'][selected_helm_armor_id]['name'],
+            'helm_decos':deco_dist['helm'],
             'chest':armor_data['chest'][selected_body_armor_id]['name'],
+            'chest_decos':deco_dist['body'],
             'arm':armor_data['arm'][selected_arm_armor_id]['name'],
+            'arm_decos':deco_dist['arm'],
             'waist':armor_data['waist'][selected_waist_armor_id]['name'],
+            'waist_decos':deco_dist['waist'],
             'leg':armor_data['leg'][selected_leg_armor_id]['name'],
-            'deco_dist':deco_dist
+            'leg_decos':deco_dist['leg'],
         
         }        
-        print(f'{solution}')
+        my_pretty_print(solution)
+        print('\n\n')
 
-    #print()
-    
+
+
 
     def solution_count(self):
         return self.__solution_count
@@ -137,10 +141,6 @@ def get_solutions(shard_index,num_shards):
 
 
 
-
-
-
-
     armor_data = json.loads(json_armor_data)
     deco_data = json.loads(json_deco_data)
 
@@ -149,9 +149,6 @@ def get_solutions(shard_index,num_shards):
     for k in armor_data.keys():
         #armor_data[k] = armor_data[k][40:]
         random.shuffle(armor_data[k])
-
-
-    
 
     bow_data = json.loads(json_bow_data)
     chargeblade_data = json.loads(json_chargeblade_data)
@@ -211,7 +208,6 @@ def get_solutions(shard_index,num_shards):
     #WHICH WEAPON
     test_weapon_type_vars=[model.NewBoolVar(f'{i}_twtp') for i in range(14)]
     test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
-
 
 
     #DECO DISTRIBUTION VARIABLES

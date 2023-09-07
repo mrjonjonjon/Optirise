@@ -106,3 +106,19 @@ def sharded_range(shard_index,num_shards,len_lst):
     return range(shard_index  *  len_lst//num_shards,\
                        ((shard_index+1)  *len_lst//num_shards) if shard_index<num_shards-1 else len_lst)
 all_weapons_cap=['GreatSword','ShortSword','Hammer','Lance','LongSword', 'SlashAxe','GunLance','DualBlades','Horn','InsectGlaive','ChargeAxe','LightBowgun','HeavyBowgun','Bow']
+
+
+def my_pretty_print(data):
+    for key, value in data.items():
+        if isinstance(value, list):
+            print(f"{key}: {', '.join(map(str, value))}")
+        else:
+            print(f"{key}: {value}")
+
+if __name__=='__main__':
+    my_pretty_print(data = {
+    "name": "John",
+    "age": 30,
+    "skills": ["Python", "JavaScript", "SQL"]
+}
+)
