@@ -5,10 +5,12 @@ import multiprocessing
 import random
 from utils import sharded_range,sharded_range_for,distribute_decos,my_pretty_print
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
-    def __init__(self, variables):
+    def __init__(self, variables,max_solutions=1):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__variables = variables
         self.__solution_count = 0
+        self.__max_solutions = max_solutions
+
         self.printed_solution_count=0
         self.armor_sets_decos=set()
 
@@ -122,6 +124,10 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         }        
         my_pretty_print(solution)
         print('\n\n')
+        #TODO:SINCE THIS IS MULTIPROCESSED, MUST DIVIDE BY 32. USE A PIPE OR SOMETHING
+        if self.__solution_count >= self.__max_solutions:
+            print(f"Stopped search after {self.__max_solutions} solutions")
+            self.StopSearch()
 
 
 
