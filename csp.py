@@ -233,7 +233,7 @@ def get_solutions(shard_index,num_shards):
 
     #=====CORE VARIABLES======
 
-    # Create boolean ARMOR variables
+    #which armor
     id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in sharded_range_for(shard_index,'helm',len(armor_data['helm'])) }
     id_to_body_armor_var = {id:model.NewBoolVar(f'c{id}') for id in sharded_range_for(shard_index,'chest',len(armor_data['chest'])) }
     id_to_arm_armor_var = {id:model.NewBoolVar(f'a{id}') for id in sharded_range_for(shard_index,'arm',len(armor_data['arm'])) }
@@ -251,12 +251,12 @@ def get_solutions(shard_index,num_shards):
             name=list(pair.keys())[0]
             deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg','weapon']}
                   
+
+    #====INTERMEDIATE VARIABLES=======
     #CREATE INTEGER SKILL VARS
     skill_name_to_num_points_var={}
     for skill_name in deco_data['maxLevel'].keys():
         skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
-
-    #====INTERMEDIATE VARIABLES=======
 
     #ARMOR DECO SLOT VARIABLES
     head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
