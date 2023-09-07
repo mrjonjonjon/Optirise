@@ -104,7 +104,7 @@ def distribute_decos(selected_deco_names,\
             for i in range(num):
                 heappush(armor_levels,(-slot_level,part,slot_level))
 
-    for slot_level,num in weapon_data[(id_to_weapon_type[selected_weapon_type_id])][selected_weapon_id]['decos']:
+    for slot_level,num in enumerate(weapon_data[id_to_weapon_type[selected_weapon_type_id]]['weapons'][selected_weapon_id]['decos']):
         slot_level+=1
         for i in range(num):
                 heappush(armor_levels,(-slot_level,'weapon',slot_level))

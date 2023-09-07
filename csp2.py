@@ -106,7 +106,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         #weapon_name = eval(f'{weapon_type}_data["weapons"][{selected_weapon_id}]["weapon"]')
 
         solution = {
-            'weapon':weapon_data[id_to_weapon_type[selected_weapon_type_id]][selected_weapon_id]['weapon'],
+            'weapon':weapon_data[id_to_weapon_type[selected_weapon_type_id]]['weapons'][selected_weapon_id]['weapon'],
             'weapon_decos':deco_dist['weapon'],
             'helm':armor_data['helm'][selected_helm_armor_id]['name'],
             'helm_decos':deco_dist['helm'],
@@ -277,7 +277,8 @@ def get_solutions(shard_index,num_shards):
 
     #OBJECTIVES/OPTIONAL CONSTRAINTS
     #fix weapon
-
+    model.Add(id_to_weapon_var[0]==1)
+    model.Add(weapon_type_vars[0]==1)
 
     #skill point constraints
     model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
@@ -315,12 +316,15 @@ def get_solutions(shard_index,num_shards):
     model.Add(sum(id_to_leg_armor_var.values()) == 1)
 
     #CAN HAVE AT MOST ONE WEAPON
-    model.Add(sum(id_to_weapon_var)==1)
-    model.Add(sum(weapon_type_vars)==1)
+    model.Add(sum(id_to_weapon_var.values())==1)
+    model.Add(sum(weapon_type_vars.values())==1)
 
     #DECOS CANT EXCEED SLOTS
     for level in range(4):  
-        model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=\
+        model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)\
+                  
+                  <=\
+                  
                   sum(head_deco_slots_vars[u_level] for u_level in range(level,4))+\
                   sum(body_deco_slots_vars[u_level] for u_level in range(level,4))+\
                   sum(arm_deco_slots_vars[u_level] for u_level in range(level,4))+\
@@ -392,11 +396,6 @@ def get_solutions(shard_index,num_shards):
 
 
 
-    #make extra weapon variables zero
-    for weapon_type_id,weapon_type in id_to_weapon_type.items():
-        numwep = len(eval(f"{weapon_type}_data['weapons']"))
-        for x in range(numwep,len(id_to_weapon_var)):
-            model.Add((id_to_weapon_var[x])==0).OnlyEnforceIf(weapon_type_vars[weapon_type_id])
 
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
@@ -406,8 +405,6 @@ def get_solutions(shard_index,num_shards):
 
             for i in range(4):
                 model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
-
-
 
 
     #ENFORCING 'skill_name_to_num_points_var' RELATIONSHIP
