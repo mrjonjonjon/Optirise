@@ -277,8 +277,8 @@ def get_solutions(shard_index,num_shards):
 
     #OBJECTIVES/OPTIONAL CONSTRAINTS
     #fix weapon
-    model.Add(id_to_weapon_var[0]==1)
-    model.Add(weapon_type_vars[0]==1)
+    #model.Add(id_to_weapon_var[0]==1)
+    #model.Add(weapon_type_vars[0]==1)
 
     #skill point constraints
     model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
@@ -396,6 +396,11 @@ def get_solutions(shard_index,num_shards):
 
 
 
+    #make extra weapon variables zero
+    for weapon_type_id,weapon_type in id_to_weapon_type.items():
+        numwep = len(eval(f"{weapon_type}_data['weapons']"))
+        for x in range(numwep,len(id_to_weapon_var)):
+            model.Add((id_to_weapon_var[x])==0).OnlyEnforceIf(weapon_type_vars[weapon_type_id])
 
     for weapon_type_id,weapon_type in id_to_weapon_type.items():
         for weapon_id in range(len(eval(f"{weapon_type}_data['weapons']"))):
@@ -405,6 +410,8 @@ def get_solutions(shard_index,num_shards):
 
             for i in range(4):
                 model.Add(weapon_deco_slots_vars[i] == eval(f"{weapon_type}_data['weapons'][{weapon_id}]['decos'][{i}]")).OnlyEnforceIf([b,c])
+
+
 
 
     #ENFORCING 'skill_name_to_num_points_var' RELATIONSHIP
