@@ -135,11 +135,8 @@ def get_solutions(shard_index,num_shards):
     #OPENING/LOADING JSONS
     with open("json/armor.json", "r") as json_file:
         json_armor_data = json_file.read()
-
     with open("json/types.json", "r") as json_file:
         json_deco_data = json_file.read()
-
-
     with open("json/Bow.json", "r") as json_file:
         json_bow_data = json_file.read()
     with open("json/ChargeBlade.json", "r") as json_file:
@@ -205,14 +202,6 @@ def get_solutions(shard_index,num_shards):
 
     #print('DATA PARSED')
 
-    #IDK
-    def h(a):
-        ans=0
-        for i in range(4):
-            ans+=a[i]*(i+1)
-        return ans
-
-
     id_to_weapon_type = {
         0: 'bow',
         1: 'dualblades',
@@ -230,7 +219,7 @@ def get_solutions(shard_index,num_shards):
         13: 'swordandshield'
     }
 
-
+    #NON-VAR DATA
     deco_name_to_points={}
     for level in range(4):
         for i in range(len(deco_data['decoLevels'][level])):
@@ -242,8 +231,7 @@ def get_solutions(shard_index,num_shards):
 
     #===========DECLARING VARIABLES================================================================
 
-
-    #
+    #=====CORE VARIABLES======
 
     # Create boolean ARMOR variables
     id_to_head_armor_var = {id:model.NewBoolVar(f'h{id}') for id in sharded_range_for(shard_index,'helm',len(armor_data['helm'])) }
@@ -252,33 +240,23 @@ def get_solutions(shard_index,num_shards):
     id_to_waist_armor_var = {id:model.NewBoolVar(f'w{id}') for id in sharded_range_for(shard_index,'waist',len(armor_data['waist'])) }
     id_to_leg_armor_var = {id:model.NewBoolVar(f'l{id}') for id in sharded_range_for(shard_index,'leg',len(armor_data['leg'])) }
 
-
-
+    #WHICH WEAPON
     test_weapon_type_vars=[model.NewBoolVar(f'{i}_twtp') for i in range(14)]
     test_weapon_vars=[model.NewBoolVar(f'{i}whichwpn') for i in range(400)]
 
-    #CREATE INTEGER SKILL VARS
-    skill_name_to_num_points_var={}
-    for skill_name in deco_data['maxLevel'].keys():
-        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
-
-    #CREATE INTEGER DECO DISTRIBUTION VARIABLES
+    #DECO DISTRIBUTION VARIABLES
     deco_name_to_dist_vars={}
     for level in range(4):
         for pair in deco_data['decoLevels'][level]:
             name=list(pair.keys())[0]
             deco_name_to_dist_vars[f'{name}_{level+1}']={ part:model.NewIntVar(0,3,f'{name}_{level+1}_{part}') for part in ['helm','chest','arm','waist','leg','weapon']}
-                        
-    #DEFENSE VARIABLES
-    #head_armor_def_var = model.NewIntVar(0,1000,'head_def')
-    #body_armor_def_var = model.NewIntVar(0,1000,'body_def')
-    #arm_armor_def_var = model.NewIntVar(0,1000,'arm_def')
-    #waist_armor_def_var = model.NewIntVar(0,1000,'waist_def')
-    #leg_armor_def_var = model.NewIntVar(0,1000,'leg_def')
+                  
+    #CREATE INTEGER SKILL VARS
+    skill_name_to_num_points_var={}
+    for skill_name in deco_data['maxLevel'].keys():
+        skill_name_to_num_points_var[skill_name]=model.NewIntVar(0,2*deco_data['maxLevel'][skill_name],f'{skill_name}')
 
-
-    #RAW ATTACK VAR
-    #raw_attack_var=model.NewIntVar(0,1000)
+    #====INTERMEDIATE VARIABLES=======
 
     #ARMOR DECO SLOT VARIABLES
     head_deco_slots_vars = [model.NewIntVar(0,3,f'hdeco{i}') for i in range(4)]#number of slots of each level
@@ -322,14 +300,6 @@ def get_solutions(shard_index,num_shards):
 
 
 
-    #model.Maximize(skill_name_to_num_points_var['AttackBoost']+skill_name_to_num_points_var['CriticalBoost'])
-    #model.Add(skill_name_to_num_points_var['WeaknessExploit']>=20)
-    #model.Maximize(skill_name_to_num_points_var['WeaknessExploit'])
-
-
-
-
-
     #NO DECOS ALLOWED
     '''for level in [0,1,2,3]:
         for pair in deco_data['decoLevels'][level]:
@@ -337,11 +307,11 @@ def get_solutions(shard_index,num_shards):
             for part in ['helm','chest','arm','waist','leg','weapon']:
                 model.Add(deco_name_to_dist_vars[f'{name}_{level+1}'][part]==0)
     '''
-    #model.Minimize(sum(body_deco_slots_vars)+sum(head_deco_slots_vars)+sum(arm_deco_slots_vars)+sum(waist_deco_slots_vars)+sum(leg_deco_slots_vars))
-
-
 
     #========MANDATORY CONSTRAINTS======================================================================
+
+
+    #===CORE CONSTRAINTS
     #CAN WEAR AT MOST ONE OF EACH ARMOR PIECE
     model.Add(sum(id_to_head_armor_var.values()) == 1)
     model.Add(sum(id_to_body_armor_var.values()) == 1)
@@ -353,14 +323,6 @@ def get_solutions(shard_index,num_shards):
     model.Add(sum(test_weapon_vars)==1)
     model.Add(sum(test_weapon_type_vars)==1)
 
-
-    #NO LAYERED ARMORS
-    #model.Add(head_armor_def_var!=0)
-    #model.Add(body_armor_def_var!=0)
-    #model.Add(arm_armor_def_var!=0)
-    #model.Add(waist_armor_def_var!=0)
-    #model.Add(leg_armor_def_var!=0)
-
     #DECOS CANT EXCEED SLOTS
     for level in range(4):  
         model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['helm'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(head_deco_slots_vars[u_level] for u_level in range(level,4)))
@@ -371,7 +333,7 @@ def get_solutions(shard_index,num_shards):
 
         model.Add(sum(deco_name_to_dist_vars[f'{skill_name}_{u_level+1}']['weapon'] for skill_name in deco_data['decos'] for u_level in range(level,4) if f'{skill_name}_{u_level+1}' in deco_name_to_dist_vars)<=sum(weapon_deco_slots_vars[u_level] for u_level in range(level,4)))
 
-
+    #INTERMEDIATE CONSTRAINTS
     #MAPPING VARIABLES TO JSON ARMOR DATA
     for id in sharded_range_for(shard_index,'helm',len(armor_data['helm'])):
         #MAP DEFENSE VARS
@@ -460,10 +422,6 @@ def get_solutions(shard_index,num_shards):
             leg_skill_name_to_points_var[skill_name]) == \
             skill_name_to_num_points_var[skill_name])
 
-
-
-
-    #model.AddDecisionStrategy(task_starts, cp_model.CHOOSE_LOWEST_MIN, cp_model.)
 
 
     #===========CREATING SOLVER AND SOLUTION PRINTER================================================================================
