@@ -1,4 +1,4 @@
-# MH_OPTIMIZER
+# OptiRise
 ![monster-hunter-rise-sunbreak-jz](https://github.com/mrjonjonjon/MH_OPTIMIZER/assets/86944352/4e8b2fac-1223-4055-8c7e-d07196014669)
 
 Set Optimizer script for MHRise: Sunbreak. Uses Google OR Tools to optimize Armor/Decos for skills.
