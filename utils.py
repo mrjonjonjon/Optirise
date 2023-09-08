@@ -70,11 +70,24 @@ def read_json_list(filename):
         lst = json.load(file)
         return lst
 
-#assumes 2**5 shards
-def sharded_range_for(shard_index,part,len_lst):
+def my_log(x):
+    ans=0
+    while x&1==0:
+        x>>=1
+        ans+=1
+    return ans
+def sharded_range_for(shard_index,part,len_lst,num_shards=32):
+
+    '''NUMSHARDS MUST BE A POWER OF 2'''
+    #shard indices 0 to 31
+    #00000
+    #11111
+
+    num_bits = my_log(num_shards)
     idx = ['helm','chest','arm','waist','leg'].index(part)
-    shard_index>>=idx
-    b= shard_index&1
+    if idx>=num_bits:return range(len_lst)
+    shard_index >>= idx
+    b = shard_index&1
     return sharded_range(b,2,len_lst)
 
 
