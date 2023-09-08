@@ -14,6 +14,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.armor_sets_decos=set()
 
     def on_solution_callback(self):
+        if self.Response().status!=cp_model.OPTIMAL:return
         self.__solution_count += 1
     
         #if self.__solution_count>100:self.StopSearch()
@@ -303,7 +304,7 @@ def get_solutions(shard_index,num_shards):
     model.Add(skill_name_to_num_points_var['Botanist']>=3)
     model.Add(skill_name_to_num_points_var['Earplugs']>=1)'''
 
-    model.Add(affinity_var==100)
+    model.Maximize(affinity_var)
 
 
 
@@ -461,13 +462,12 @@ def get_solutions(shard_index,num_shards):
     solution_printer = VarArraySolutionPrinter(solution_printer_arg)
 
     #=================SOLVING===========================================================================
+    #TODO:If looking for globally optimal solution, eed to do search on at least 32 solutions
 
-
-    #solver.parameters.enumerate_all_solutions = True
+    solver.parameters.enumerate_all_solutions = True
 
     status = solver.Solve(model,solution_callback=solution_printer)
     #print(f'process {shard_index} ended')
-
 
     #==============PRINT WHETHER FOUND OPTIMAL SOLUTION====================================================
     '''    if status == cp_model.OPTIMAL:
