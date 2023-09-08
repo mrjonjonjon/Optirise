@@ -14,7 +14,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.armor_sets_decos=set()
 
     def on_solution_callback(self):
-        if self.Response().status!=cp_model.OPTIMAL:return
+        #if self.Response().status!=cp_model.OPTIMAL:return
         self.__solution_count += 1
     
         #if self.__solution_count>100:self.StopSearch()
@@ -287,24 +287,27 @@ def get_solutions(shard_index,num_shards):
 
     #OBJECTIVES/OPTIONAL CONSTRAINTS
     #fix weapon
-    #model.Add(id_to_weapon_var[0]==1)
-    #model.Add(weapon_type_vars[0]==1)
+    model.Add(id_to_weapon_var[0]==1)
+    model.Add(weapon_type_vars[0]==1)
 
     #skill point constraints
-    '''model.Add(skill_name_to_num_points_var['DragonResistance']>=3)
-    model.Add(skill_name_to_num_points_var['GuardUp']>=3)
-    model.Add(skill_name_to_num_points_var['Agitator']>=5)
-    model.Add(skill_name_to_num_points_var['WeaknessExploit']>=3)
-    model.Add(skill_name_to_num_points_var['BladescaleHone']>=3)
-    model.Add(skill_name_to_num_points_var['WirebugWhisperer']>=3)
-    model.Add(skill_name_to_num_points_var['Bombardier']>=3)
-    model.Add(skill_name_to_num_points_var['AffinitySliding']>=1)
-    model.Add(skill_name_to_num_points_var['Embolden']>=1)
-    model.Add(skill_name_to_num_points_var['Guts']>=2)
-    model.Add(skill_name_to_num_points_var['Botanist']>=3)
-    model.Add(skill_name_to_num_points_var['Earplugs']>=1)'''
-
-    model.Maximize(affinity_var)
+    desired_skills = set(
+    ('DragonResistance', 3),
+    ('GuardUp', 3),
+    ('Agitator', 5),
+    ('WeaknessExploit', 3),
+    ('BladescaleHone', 3),
+    ('WirebugWhisperer', 3),
+    ('Bombardier', 3),
+    ('AffinitySliding', 1),
+    ('Embolden', 1),
+    ('Guts', 2),
+    ('Botanist', 3),
+    ('Earplugs', 1)
+    )
+    for skill,level in desired_skills:
+        model.Add(skill_name_to_num_points_var[skill]>=level)
+    #model.Maximize(affinity_var)
 
 
 
@@ -432,10 +435,10 @@ def get_solutions(shard_index,num_shards):
         model.Add(sum(deco_name_to_points[f'{skill_name}_{level+1}']*deco_name_to_dist_vars[f'{skill_name}_{level+1}'] for level in [0,1,2,3] if f'{skill_name}_{level+1}' in deco_name_to_dist_vars)+\
             
             (head_skill_name_to_points_var[skill_name] +  \
-            body_skill_name_to_points_var[skill_name] +  \
-            arm_skill_name_to_points_var[skill_name]  +  \
-            waist_skill_name_to_points_var[skill_name]+  \
-            leg_skill_name_to_points_var[skill_name]) == \
+            body_skill_name_to_points_var[skill_name]  +  \
+            arm_skill_name_to_points_var[skill_name]   +  \
+            waist_skill_name_to_points_var[skill_name] +  \
+            leg_skill_name_to_points_var[skill_name])  == \
             skill_name_to_num_points_var[skill_name])
 
 
@@ -457,7 +460,8 @@ def get_solutions(shard_index,num_shards):
     'weapon_type_vars':weapon_type_vars,
     'id_to_weapon_type':id_to_weapon_type,
     'weapon_type_vars':weapon_type_vars,
-    'affinity':affinity_var
+    'affinity':affinity_var,
+    'skill_name_to_num_points_var':skill_name_to_num_points_var
     }
     solution_printer = VarArraySolutionPrinter(solution_printer_arg)
 
