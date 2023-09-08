@@ -291,7 +291,7 @@ def get_solutions(shard_index,num_shards):
     model.Add(weapon_type_vars[0]==1)
 
     #skill point constraints
-    desired_skills = set(
+    desired_skills = set([
     ('DragonResistance', 3),
     ('GuardUp', 3),
     ('Agitator', 5),
@@ -304,7 +304,7 @@ def get_solutions(shard_index,num_shards):
     ('Guts', 2),
     ('Botanist', 3),
     ('Earplugs', 1)
-    )
+    ])
     for skill,level in desired_skills:
         model.Add(skill_name_to_num_points_var[skill]>=level)
     #model.Maximize(affinity_var)
