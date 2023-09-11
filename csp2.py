@@ -5,7 +5,7 @@ from utils import sharded_range_for,distribute_decos,my_pretty_print
 
 
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
-    def __init__(self, variables,max_solutions=1):
+    def __init__(self, variables,max_solutions=10000):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__variables = variables
         self.__solution_count = 0

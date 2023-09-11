@@ -4,9 +4,9 @@ from csp2 import get_solutions
 import multiprocessing
 import time
 def main():
-    find_all_solutions = False
-    n_processes = 2**2#same as number of shards
-    threads_per_shard=2
+    find_all_solutions = True
+    n_processes = 2**3#same as number of shards
+    threads_per_shard= 1
     #WARNING: FIND_ALL_SOLUTIONS IS INCOMPATIBLE WITH THREADS_PER_SHARD>1
     #IF WANT ALL SOLUTIONS, USE SHARDING WITH MULTIPLE PROCESSES
     #IF WANT ONE SOLUTION, USE 1 SHARD WITH MULTIPLE THREADS
